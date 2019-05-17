@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>185af9f3-760b-4892-817e-d039607b5ee7</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>KiteConnect.py</StartupFile>
+    <StartupFile>source\Main.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -21,7 +21,35 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="KiteConnect.py" />
+    <Compile Include="source\InitToken.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="source\InstrumentListGenerator.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="source\TickAnalyser.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="source\Ticker.py" />
+    <Compile Include="source\Main.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="source\__init__.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="source\Utility.py">
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="NoGithub\" />
+    <Folder Include="source\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="NoGithub\access_token" />
+    <Content Include="NoGithub\api_key" />
+    <Content Include="NoGithub\api_secret" />
+    <Content Include="NoGithub\refresh_token" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in

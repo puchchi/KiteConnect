@@ -259,3 +259,7 @@ paket-files/
 # Python Tools for Visual Studio (PTVS)
 __pycache__/
 *.pyc
+KiteConnect/NoGithub/access_token
+KiteConnect/NoGithub/refresh_token
+KiteConnect/NoGithub/api_key
+KiteConnect/NoGithub/api_secret
