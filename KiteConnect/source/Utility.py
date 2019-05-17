@@ -9,7 +9,7 @@ API_KEY_FILENAME = 'api_key'
 API_SECRET_FILENAME = 'api_secret'
 ACCESS_TOKEN_FILENAME = 'access_token'
 REFRESH_TOKEN_FILENAME = 'refresh_token'
-REQUEST_TOKEN = 'tYm7aA4fFIbRNeCqPWTLDWwnO5Z2DQQj'
+REQUEST_TOKEN = 'BnzmtMrNizqxKN5nG7S1mD3r6hT0D6ND'
 ACCESS_TOKEN_URL = 'https://api.kite.trade/session/token'
 INSTRUMENTS_DATA_URL = 'https://api.kite.trade/instruments'
 
@@ -33,9 +33,7 @@ def GetNSE500List():
         nse500ListDF = pd.read_csv(DATA_LOCATION + NSE500_WITH_ZERODHA_INSTRUMENT_TOKEN)
         nse500InstrumentTokenList = nse500ListDF["InstrumentToken"]
 
-        print type(nse500InstrumentTokenList)
-        print nse500InstrumentTokenList
-        return nse500InstrumentTokenList
+        return list(nse500InstrumentTokenList)
     except Exception as e:
         print e
         return []

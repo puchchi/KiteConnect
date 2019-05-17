@@ -8,8 +8,8 @@ import Ticker, InstrumentListGenerator
 if __name__=='__main__':
 
     ### Don't run first lintrument gerator lines, they are very time comsuming
-    inst = InstrumentListGenerator.InstrumentListGenerator()
-    inst.CreateNSE500ToZerodhaInstrumentList()
+    #inst = InstrumentListGenerator.InstrumentListGenerator()
+    #inst.CreateNSE500ToZerodhaInstrumentList()
 
     # Initiating token manger
     TokenManager()

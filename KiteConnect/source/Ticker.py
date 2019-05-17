@@ -2,7 +2,7 @@ from kiteconnect import KiteTicker
 from kiteconnect import KiteConnect
 
 import hashlib, time, requests, thread
-import TickAnalyser
+import TickAnalyser, Utility
 from InitToken import TokenManager
 
 
@@ -25,7 +25,7 @@ def on_connect(ws, response):
     # Subscribe to a list of instrument_tokens (RELIANCE and ACC here).
     
     print "Connection successful......................."
-    subscriberList = GetNSE500List()
+    subscriberList = Utility.GetNSE500List()
     ws.subscribe(subscriberList)
 
     # Set RELIANCE to tick in `full` mode.
