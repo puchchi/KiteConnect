@@ -263,3 +263,6 @@ KiteConnect/NoGithub/access_token
 KiteConnect/NoGithub/refresh_token
 KiteConnect/NoGithub/api_key
 KiteConnect/NoGithub/api_secret
+KiteConnect/NoGithub/password
+KiteConnect/NoGithub/pin
+KiteConnect/NoGithub/user_id

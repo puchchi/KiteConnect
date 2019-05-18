@@ -49,7 +49,9 @@
     <Content Include="NoGithub\access_token" />
     <Content Include="NoGithub\api_key" />
     <Content Include="NoGithub\api_secret" />
-    <Content Include="NoGithub\refresh_token" />
+    <Content Include="NoGithub\password" />
+    <Content Include="NoGithub\pin" />
+    <Content Include="NoGithub\user_id" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in

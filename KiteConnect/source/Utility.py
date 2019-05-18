@@ -8,13 +8,15 @@ KEYS_LOCATION = path.dirname(path.dirname(path.abspath(__file__))) + "\\NoGithub
 API_KEY_FILENAME = 'api_key'
 API_SECRET_FILENAME = 'api_secret'
 ACCESS_TOKEN_FILENAME = 'access_token'
-REFRESH_TOKEN_FILENAME = 'refresh_token'
-REQUEST_TOKEN = 'BnzmtMrNizqxKN5nG7S1mD3r6hT0D6ND'
+USERID_FILENAME = 'user_id'
+PASSWORD_FILENAME = 'password'
+PIN_FILENAME = 'pin'
+
 ACCESS_TOKEN_URL = 'https://api.kite.trade/session/token'
 INSTRUMENTS_DATA_URL = 'https://api.kite.trade/instruments'
 
 GAP_LOWER_LIMIT = 2
-GAP_UPPER_LIMIT = 5
+GAP_UPPER_LIMIT = 50
 
 DATA_LOCATION = path.dirname(path.dirname(path.abspath(__file__))) + "\\Data\\"
 ZERODHA_INSTRUMENT_LIST_FILENAME = 'instruments'

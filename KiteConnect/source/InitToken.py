@@ -20,17 +20,24 @@ class TokenManager(object):
         else:
             TokenManager.__instance = self
 
+        print "Initializing token manager....."
         # First we will set data we have on disk
         self.SetApiKey()
         self.SetApiSecretKey()
-        self.SetRequestToken()
+        self.SetUserId()
+        self.SetPassword()
+        self.SetPin()
+
+        # Retireve and set request token
+        print "Retrieving request token....."
+        self.SetRequestToken(self.RetrieveRequestToken())
 
         # Second get other token from api request and write them on disk
-        self.RetrieveAccessAndRefreshToken()
+        print "Retrieving access token....."
+        self.RetrieveAccessToken()
 
         # Third read newly written token from disk
         self.SetAccessToken()
-        self.SetRefreshToken()
 
     """ Api_key getter setter"""
     def GetApiKey(self):
@@ -52,12 +59,35 @@ class TokenManager(object):
         with open(KEYS_LOCATION + API_SECRET_FILENAME, 'r') as file:
             self.apiSecretKey = file.read()
 
-    """ Request token getter setter"""
-    def GetRequestToken(self):
-        return self.requestToken
+    """ User id getter setter"""
+    def GetUserId(self):
+        if self.CheckInstance():
+            return self.userId
+        return ""
 
-    def SetRequestToken(self):
-        self.requestToken = REQUEST_TOKEN
+    def SetUserId(self):
+        with open(KEYS_LOCATION + USERID_FILENAME, 'r') as file:
+            self.userId = file.read()
+
+    """ Password getter setter"""
+    def GetPassword(self):
+        if self.CheckInstance():
+            return self.password
+        return ""
+
+    def SetPassword(self):
+        with open(KEYS_LOCATION + PASSWORD_FILENAME, 'r') as file:
+            self.password = file.read()
+
+    """ Pin getter setter"""
+    def GetPin(self):
+        if self.CheckInstance():
+            return self.pin
+        return ""
+
+    def SetPin(self):
+        with open(KEYS_LOCATION + PIN_FILENAME, 'r') as file:
+            self.pin = file.read()
 
     """ Access token getter setter"""
     def GetAccessToken(self):
@@ -73,7 +103,7 @@ class TokenManager(object):
         with open(KEYS_LOCATION + ACCESS_TOKEN_FILENAME, 'w+') as file:
             return file.write(access_token)
 
-    def RetrieveAccessAndRefreshToken(self):
+    def RetrieveAccessToken(self):
         checkSumString = self.GetApiKey() + self.GetRequestToken() + self.GetApiSecretKey()
         checkSumHash = GETSHA256(checkSumString)
 
@@ -88,25 +118,91 @@ class TokenManager(object):
             userData = responseData['data']
             if userData.has_key('access_token'):
                 self.WriteAccessTokenToFile(userData['access_token'])
-            if userData.has_key('refresh_token'):
-                self.WriteRefreshTokenToFile(userData['refresh_token'])
+                print "Access token retrieved successfully....."
 
-    """ Refresh token getter setter"""
-    def GetRefreshToken(self):
+    """ Request token getter and setter"""
+    def GetRequestToken(self):
         if self.CheckInstance():
-            return self.refreshToken
+            return self.requestToken
         return ""
 
-    def SetRefreshToken(self):
-        with open(KEYS_LOCATION + REFRESH_TOKEN_FILENAME, 'r') as file:
-            self.refreshToken = file.read()
+    def SetRequestToken(self, requestToken):
+        self.requestToken = requestToken
 
-    def WriteRefreshTokenToFile(self, refresh_token):
-        with open(KEYS_LOCATION + REFRESH_TOKEN_FILENAME, 'w+') as file:
-            return file.write(refresh_token)
+    def RetrieveRequestToken(self):
+        header1 = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:66.0) Gecko/20100101 Firefox/66.0',
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                    'Accept-Language': 'en-US,en;q=0.5','Content-Type': 'application/x-www-form-urlencoded',
+                    'Connection': 'close', 'Upgrade-Insecure-Requests': '1'}
+        _url1 = 'https://kite.zerodha.com/connect/login?v=3&api_key=' + self.GetApiKey()
+        response = requests.get(_url1, headers=header1)
+        self.CheckResponse(response)
+        responseUrl = response.url
+
+        # Now we will get sess_id from response url
+        if responseUrl.find('sess_id') == -1:
+            raise "Session id not found in url1"
+        sessionID = responseUrl.split('sess_id=')[1].split('&')[0]
+
+        header2 = header1
+        _url2 = 'https://kite.zerodha.com/connect/login?api_key=' + self.GetApiKey() + '&sess_id=' + sessionID
+        response = requests.get(_url2, headers=header2)
+        self.CheckResponse(response)
+        cookies = response.cookies.get_dict()
+
+        _url3 = 'https://kite.zerodha.com/api/login'
+        header3 = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:66.0) Gecko/20100101 Firefox/66.0',
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                    'Accept-Language': 'en-US,en;q=0.5', 'Content-Type': 'application/x-www-form-urlencoded',
+                    'Connection': 'close', 'Upgrade-Insecure-Requests': '1',
+                    'Referer': _url2, 'X-Kite-Version': '2.1.0',
+                    'X-Kite-Userid': self.GetUserId(), 'X-CSRFTOKEN': 'undefined'}
+        params = {'user_id':self.GetUserId(), 'password':self.GetPassword()}
+        response = requests.post(_url3, headers=header3, data=params, cookies=cookies)
+        self.CheckResponse(response)
+        responseDict = response.json()
+
+        # Check if we are on pin submission page
+        if responseDict['status'] == 'success' and responseDict['data']['twofa_status'] == 'active':
+            _url4 = 'https://kite.zerodha.com/api/twofa'
+            header4 = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:66.0) Gecko/20100101 Firefox/66.0',
+                        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                        'Accept-Language': 'en-US,en;q=0.5', 'Content-Type': 'application/x-www-form-urlencoded',
+                        'Connection': 'close', 'Upgrade-Insecure-Requests': '1',
+                        'Referer': _url2, 'X-Kite-Version': '2.1.0',
+                        'X-Kite-Userid': self.GetUserId(), 'X-CSRFTOKEN': 'undefined'}
+            data = {'user_id':self.GetUserId(), 'request_id':responseDict['data']['request_id'], 'twofa_value':self.GetPin()}
+            response = requests.post(_url4, headers=header4, data=data, cookies=cookies)
+            self.CheckResponse(response)
+            newCookies = response.cookies.get_dict()
+
+            # adding new cookies in old cookies
+            cookies.update(newCookies)
+            _url5 = 'https://kite.zerodha.com/connect/login?api_key=' + self.GetApiKey() + '&sess_id=' + sessionID + '&skip_session=true'
+            header5 ={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:66.0) Gecko/20100101 Firefox/66.0',
+                        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                        'Accept-Language': 'en-US,en;q=0.5', 'Content-Type': 'application/x-www-form-urlencoded',
+                        'Connection': 'close', 'Upgrade-Insecure-Requests': '1',
+                        'Referer': _url2}
+            try:
+                response = requests.get(_url5, headers=header5, cookies=cookies, allow_redirects=False)
+                if response.status_code == 302:         # Redirection
+                    redirectedUrl = response.headers['Location']
+                    if redirectedUrl.find('request_token') != -1:
+                        requestToken = redirectedUrl.split('request_token=')[1].split('&')[0]
+                        print "Request token retrieved successfully....."
+                        return requestToken
+            except requests.exceptions.ConnectionError as e:
+                print e
+        return ""
 
     def CheckInstance(self):
         if TokenManager.__instance == None:
             return False
         return True
+
+    def CheckResponse(self, response):
+        if response.status_code != 200:
+            raise "Bad response!!!"
+
 

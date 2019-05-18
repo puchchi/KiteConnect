@@ -24,13 +24,14 @@ def on_connect(ws, response):
     # Callback on successful connect.
     # Subscribe to a list of instrument_tokens (RELIANCE and ACC here).
     
-    print "Connection successful......................."
+    print "Connection successful....."
     subscriberList = Utility.GetNSE500List()
     ws.subscribe(subscriberList)
 
     # Set RELIANCE to tick in `full` mode.
     #ws.set_mode(ws.MODE_QUOTE, [738561])
     #ws.set_mode(ws.MODE_FULL, [5633])
+    #ws.set_mode(ws.MODE_QUOTE, subscriberList)
     ws.set_mode(ws.MODE_QUOTE, subscriberList)
 
 def on_message(ws, payload, is_binary):
