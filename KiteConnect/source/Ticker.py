@@ -1,7 +1,7 @@
 from kiteconnect import KiteTicker
 from kiteconnect import KiteConnect
 
-import hashlib, time, requests, thread
+import hashlib, time, requests, thread, logging
 import TickAnalyser, Utility
 from InitToken import TokenManager
 
@@ -15,16 +15,18 @@ def on_ticks(ws, ticks):
     # Callback to receive ticks.
 
     try:
-        thread.start_new_thread(TickAnalyser.Analyse, (ticks,))
+        thread.start_new_thread(TickAnalyser.Analyse, (ws, ticks))
     except Exception as e:
         print "e"
         raise "Exception in on_ticks in Ticker.py"
+        logging.error("Exception occured!", exc_info=True)
 
 def on_connect(ws, response):
     # Callback on successful connect.
     # Subscribe to a list of instrument_tokens (RELIANCE and ACC here).
     
     print "Connection successful....."
+    logging.info("Connection successful.....")
     subscriberList = Utility.GetNSE500List()
     ws.subscribe(subscriberList)
 
@@ -43,7 +45,8 @@ def on_close(ws, code, reason):
     # Reconnection will not happen after executing `ws.stop()`
 
     print "Reason for closing websocket: " + str(reason)
-
+    logging.info("Closing websocket!")
+    logging.info("Reason for closing websocket: " + str(reason))
     ws.stop()
 
 def StartTicker():

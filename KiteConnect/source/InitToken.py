@@ -21,6 +21,7 @@ class TokenManager(object):
             TokenManager.__instance = self
 
         print "Initializing token manager....."
+        logging.info("Initializing token manager.....")
         # First we will set data we have on disk
         self.SetApiKey()
         self.SetApiSecretKey()
@@ -30,10 +31,12 @@ class TokenManager(object):
 
         # Retireve and set request token
         print "Retrieving request token....."
+        logging.info("Retrieving request token.....")
         self.SetRequestToken(self.RetrieveRequestToken())
 
         # Second get other token from api request and write them on disk
         print "Retrieving access token....."
+        logging.info("Retrieving access token.....")
         self.RetrieveAccessToken()
 
         # Third read newly written token from disk
@@ -46,7 +49,7 @@ class TokenManager(object):
         return ""
 
     def SetApiKey(self):
-        with open(KEYS_LOCATION + API_KEY_FILENAME, 'r') as file:
+        with open(API_KEY_PATH, 'r') as file:
             self.apiKey = file.read()
 
     """ Api secret key getter setter"""
@@ -56,7 +59,7 @@ class TokenManager(object):
         return ""
 
     def SetApiSecretKey(self):
-        with open(KEYS_LOCATION + API_SECRET_FILENAME, 'r') as file:
+        with open(API_SECRET_PATH, 'r') as file:
             self.apiSecretKey = file.read()
 
     """ User id getter setter"""
@@ -66,7 +69,7 @@ class TokenManager(object):
         return ""
 
     def SetUserId(self):
-        with open(KEYS_LOCATION + USERID_FILENAME, 'r') as file:
+        with open(USERID_PATH, 'r') as file:
             self.userId = file.read()
 
     """ Password getter setter"""
@@ -76,7 +79,7 @@ class TokenManager(object):
         return ""
 
     def SetPassword(self):
-        with open(KEYS_LOCATION + PASSWORD_FILENAME, 'r') as file:
+        with open(PASSWORD_PATH, 'r') as file:
             self.password = file.read()
 
     """ Pin getter setter"""
@@ -86,7 +89,7 @@ class TokenManager(object):
         return ""
 
     def SetPin(self):
-        with open(KEYS_LOCATION + PIN_FILENAME, 'r') as file:
+        with open(PIN_PATH, 'r') as file:
             self.pin = file.read()
 
     """ Access token getter setter"""
@@ -96,11 +99,11 @@ class TokenManager(object):
         return ""
 
     def SetAccessToken(self):
-        with open(KEYS_LOCATION + ACCESS_TOKEN_FILENAME, 'r') as file:
+        with open(ACCESS_TOKEN_PATH, 'r') as file:
             self.accessToken = file.read()
 
     def WriteAccessTokenToFile(self, access_token):
-        with open(KEYS_LOCATION + ACCESS_TOKEN_FILENAME, 'w+') as file:
+        with open(ACCESS_TOKEN_PATH, 'w+') as file:
             return file.write(access_token)
 
     def RetrieveAccessToken(self):
@@ -119,6 +122,7 @@ class TokenManager(object):
             if userData.has_key('access_token'):
                 self.WriteAccessTokenToFile(userData['access_token'])
                 print "Access token retrieved successfully....."
+                logging.info("Access token retrieved successfully.....")
 
     """ Request token getter and setter"""
     def GetRequestToken(self):
@@ -190,10 +194,12 @@ class TokenManager(object):
                     redirectedUrl = response.headers['Location']
                     if redirectedUrl.find('request_token') != -1:
                         requestToken = redirectedUrl.split('request_token=')[1].split('&')[0]
+                        logging.info("Request token retrieved successfully.....")
                         print "Request token retrieved successfully....."
                         return requestToken
             except requests.exceptions.ConnectionError as e:
                 print e
+                logging.error("Exception occured!", exc_info=True)
         return ""
 
     def CheckInstance(self):

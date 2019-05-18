@@ -42,6 +42,9 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Logs\" />
+    <Folder Include="TradableStocks\" />
+    <Folder Include="ShortlistedStocks\" />
     <Folder Include="NoGithub\" />
     <Folder Include="source\" />
   </ItemGroup>
