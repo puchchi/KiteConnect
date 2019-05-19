@@ -4,6 +4,7 @@ from kiteconnect import KiteConnect
 import hashlib, time, requests, thread, logging
 import TickAnalyser, Utility
 from InitToken import TokenManager
+from multiprocessing import Process, Queue
 
 
 #kite = KiteConnect(api_key=API_KEY)
@@ -60,6 +61,32 @@ def StartTicker():
     kws.on_message = on_message
     kws.connect()
 
+class kCommand:
 
+    def __init__(self, *args):
+        self.args = args
 
+    def run_job(self, queue, args):
+        try:
+            StartTicker()
+            queue.put(None)
+        except Exception as e:
+            queue.put(e)
+
+    def run_process(self):
+        queue = Queue()
+        process = Process(target=self.run_job, args=(queue, self.args))
+        process.start()
+        result = queue.get()
+        process.join()
+
+        if result is not None:
+            raise result
+
+    def do(self):
+        thread.start_new_thread(self.run_process, ())
+        
+
+    def get_name(self):
+        return "Start sticker command"
 

@@ -1,7 +1,20 @@
 from Utility import *
 from os import path
+from datetime import datetime
 
 def Analyse(ws, ticks):
+    now = int(datetime.now().strftime("%H%M%S"))
+    if now >= TIMESTAMP1 and now < TIMESTAMP2:
+        CollectStocks(ws, ticks)
+    elif now >= TIMESTAMP2 and now < TIMESTAMP3:
+        pass
+    elif now >= TIMESTAMP3 and now < TIMESTAMP10:
+        Trade(ws, ticks)
+    else:
+       # ws.close()
+       CollectStocks(ws, ticks)
+
+def CollectStocks(ws, ticks):
     for tick in ticks:
         ohlc = tick['ohlc']
         prevClose = ohlc['close']
@@ -22,7 +35,7 @@ def Analyse(ws, ticks):
 
             try:
                 with open(path.join(SHORTLISTED_STOCK_LOCATION, str(instrumentToken)), 'w+') as f:
-                    f.write(str(openPrice) + "," + signal)
+                    f.write("open,"+"signal\n" + str(openPrice) + "," + signal)
                 print "Shortlisted stocks | " + str(instrumentToken) + ", opened at " + str(gapOpenPer)
             except Exception as e:
                 logging.error("Exception occured!Tick analyser", exc_info=True)
@@ -39,3 +52,5 @@ def Analyse(ws, ticks):
         print "Unsubscribing from " + str(instrumentToken) + ", opened at " + str(gapOpenPer)
         #logging.info("Unsubscribing from " + str(instrumentToken) + ", opened at " + str(gapOpenPer))
 
+def Trade(ws, ticks):
+    pass

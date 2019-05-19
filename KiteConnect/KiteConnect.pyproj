@@ -21,10 +21,16 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="source\CleanUp.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="source\InitToken.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="source\InstrumentListGenerator.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="source\Scheduling.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="source\TickAnalyser.py">
@@ -32,6 +38,9 @@
     </Compile>
     <Compile Include="source\Ticker.py" />
     <Compile Include="source\Main.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="source\TradableStockCal.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="source\__init__.py">
