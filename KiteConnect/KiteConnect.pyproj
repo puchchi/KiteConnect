@@ -30,6 +30,9 @@
     <Compile Include="source\InstrumentListGenerator.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="source\KiteOrderManager.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="source\Scheduling.py">
       <SubType>Code</SubType>
     </Compile>

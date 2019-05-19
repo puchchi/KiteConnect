@@ -19,7 +19,7 @@ class Main:
         self.CreateTaskList()
 
         while 1:
-            now = dt.now().strftime("%d-%m-%Y %H:%M") 
+            now = dt.now().strftime("%d-%m-%Y %H:%M:%S") 
             print "Checking at "+ now
 
             try:

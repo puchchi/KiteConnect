@@ -20,6 +20,8 @@ class TokenManager(object):
         else:
             TokenManager.__instance = self
 
+        self.dirty = False
+
         print "Initializing token manager....."
         logging.info("Initializing token manager.....")
         # First we will set data we have on disk
@@ -29,6 +31,20 @@ class TokenManager(object):
         self.SetPassword()
         self.SetPin()
 
+        # Retireve and set request token
+        print "Retrieving request token....."
+        logging.info("Retrieving request token.....")
+        self.SetRequestToken(self.RetrieveRequestToken())
+
+        # Second get other token from api request and write them on disk
+        print "Retrieving access token....."
+        logging.info("Retrieving access token.....")
+        self.RetrieveAccessToken()
+
+        # Third read newly written token from disk
+        self.SetAccessToken()
+
+    def Reset(self):
         # Retireve and set request token
         print "Retrieving request token....."
         logging.info("Retrieving request token.....")
@@ -94,6 +110,9 @@ class TokenManager(object):
 
     """ Access token getter setter"""
     def GetAccessToken(self):
+        if self.dirty==True:
+            print "Access token is dirty, resetting....."
+            self.Reset()
         if self.CheckInstance():
             return self.accessToken
         return ""
@@ -211,4 +230,5 @@ class TokenManager(object):
         if response.status_code != 200:
             raise "Bad response!!!"
 
-
+    def ResetAccesToken(self):
+        self.dirty = True

@@ -35,10 +35,13 @@ TRADABLE_STOCK_LOCATION = path.join(HOME_DIR, "TradableStocks")
 
 AVAILABLE_MARGIN = 20000 * 4        # Assuming 4x leavarege on Bracket order
 
-TIMESTAMP1 = 191100#91505     # 09:15:05 AM (added 5 second as time padding)
-TIMESTAMP2 = 191300#91800     # 09:18:00 AM
-TIMESTAMP3 = 191400#92000     # 09:20:05 AM
-TIMESTAMP10 = 193000    # 03:20:00 PM
+TIMESTAMP1 = 91505     #91505     # 09:15:05 AM (added 5 second as time padding)
+TIMESTAMP2 = 91800     #91800     # 09:18:00 AM
+TIMESTAMP3 = 92000     #92000     # 09:20:05 AM
+TIMESTAMP10 = 152000   #152000    # 03:20:00 PM
+
+PROFIT_PERCENTAGE = 1
+STOPLOSS_PERCENTAGE = 1
 
 # Request tokken url: https://kite.trade/connect/login?v=3&api_key=t7cybf56wqczkl68
 #curl https://api.kite.trade/session/token -H "X-Kite-Version: 3" -d "api_key=t7cybf56wqczkl68" -d "request_token=7yg1Fh0Eh5vX2I06AnNZxfwUBa7VqJzQ" -d "checksum=ca2ab4fa3819d46578dde379799f64d7c15169e83ed5d6d8d9b5c7988d7d8436"

@@ -13,8 +13,8 @@ SCHEDULED_TASK=(
     # argument (symbol/list of symbol, [args], type, tableName)
 
      # Start ticker, every day once
-    (CleanUp, [], ["1857"], ),         #0900
-    (Ticker, [], ["1858"], ),             #0915
-    (TradableStockCal, [], ["1859"], ),     #0918
+    (CleanUp, [], ["0910"], ),         #0900
+    (Ticker, [], ["0915"], ),             #0915
+    (TradableStockCal, [], ["0918"], ),     #0918
     )
 

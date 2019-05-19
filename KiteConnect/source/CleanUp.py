@@ -1,8 +1,15 @@
 import os
 from Utility import *
 from multiprocessing import Process, Queue
+from datetime import datetime
 
 def CleanUp():
+    
+    now = int(datetime.now().strftime("%H%M%S"))
+    # Dont cleanup after 9:15am
+    if now >= TIMESTAMP1:
+        return
+
     print "Clean up starts..."
     logging.info("Clean up starts...")
     DeleteAllFiles(SHORTLISTED_STOCK_LOCATION)
