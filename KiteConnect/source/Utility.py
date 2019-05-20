@@ -1,6 +1,6 @@
 from os import path
 
-import hashlib
+import hashlib, os
 import requests, json
 import pandas as pd
 import logging
@@ -33,12 +33,16 @@ NSE500_WITH_ZERODHA_INSTRUMENT_TOKEN = path.join(DATA_LOCATION, "nse500withzerod
 SHORTLISTED_STOCK_LOCATION = path.join(HOME_DIR, "ShortlistedStocks")
 TRADABLE_STOCK_LOCATION = path.join(HOME_DIR, "TradableStocks")
 
-AVAILABLE_MARGIN = 20000 * 4        # Assuming 4x leavarege on Bracket order
+USE_CONSTANT_QUANTITY = True
+CONSTANT_QUANTITY = 1
+AVAILABLE_MARGIN = 20000 * 2        # Assuming 4x leavarege on Bracket order
 
-TIMESTAMP1 = 91505     #91505     # 09:15:05 AM (added 5 second as time padding)
-TIMESTAMP2 = 91800     #91800     # 09:18:00 AM
-TIMESTAMP3 = 92000     #92000     # 09:20:05 AM
-TIMESTAMP10 = 152000   #152000    # 03:20:00 PM
+ORDER_TYPE = 'MIS'          #'BO'
+
+TICKERSTART = 180000     #91505     # 09:15:05 AM (added 5 second as time padding)
+TRADABLESTOCKSTART = 180600     #91800     # 09:18:00 AMl
+TRADINGSTART = 180700     #92000     # 09:20:05 AM
+TRADINGCLOSE = 180500   #152000    # 03:20:00 PM
 
 PROFIT_PERCENTAGE = 1
 STOPLOSS_PERCENTAGE = 1
@@ -53,6 +57,22 @@ def GETSHA256(data):
 
 def GetNSE500List():
     try:
+        # First check if SHORTLISTED_STOCK_LOCATION is empty r not
+        try:
+            shortListedStock = os.listdir(SHORTLISTED_STOCK_LOCATION)
+            if shortListedStock.__len__() > 0:
+                # Now check how many of these stocks have been traded
+                tradedStock = os.listdir(TRADABLE_STOCK_LOCATION)
+
+                for stock in tradedStock:
+                    if stock.find("_done") != -1:
+                        shortListedStock.remove(stock.split("_done")[0])
+
+                return shortListedStock
+        except Exception as e:
+            print e
+            return []
+
         nse500ListDF = pd.read_csv(NSE500_WITH_ZERODHA_INSTRUMENT_TOKEN)
         nse500InstrumentTokenList = nse500ListDF["InstrumentToken"]
 
@@ -68,10 +88,10 @@ def IsWeekday(datetime):
     return False
 
 def GetNSE500ListWithSymbol():
+    nse500ListDF = pd.DataFrame()
     try:
         nse500ListDF = pd.read_csv(NSE500_WITH_ZERODHA_INSTRUMENT_TOKEN)
-        return nse500ListDF
     except Exception as e:
         print e
         logging.critical("Unable to find nse500 list", exc_info=True)
-        return []
+    return nse500ListDF

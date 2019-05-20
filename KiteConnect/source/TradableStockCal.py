@@ -8,6 +8,11 @@ def Calculate():
     print "Tradable stock calculation starts...."
     logging.info("Tradable stock calculation starts....")
 
+    tempFiles = os.listdir(TRADABLE_STOCK_LOCATION)
+    if tempFiles.__len__() >0:
+        print "TradableStocks folder already contains some stocks, returning ....."
+        logging.info("TradableStocks folder already contains some stocks, returning .....")
+
     # Get all files in Shortlisted stocks
     shortlistedStocks = os.listdir(SHORTLISTED_STOCK_LOCATION)
     stockToOpenPrice = {}
@@ -30,6 +35,8 @@ def Calculate():
         if stockToOpenPrice.has_key(str(instrumentToken)):
             openPrice = stockToOpenPrice[str(instrumentToken)]
             quantity = int(marginForEachStock / openPrice)
+            if USE_CONSTANT_QUANTITY:
+                quantity = CONSTANT_QUANTITY
             if quantity == 0:
                 logging.info("Not enough margin avaible")
                 print "Not enough margin avaible"

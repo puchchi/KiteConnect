@@ -4,7 +4,8 @@ sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
 sys.path.append( path.dirname( path.abspath(__file__) ) )
 
 import Ticker, TradableStockCal, CleanUp
-from Utility import *
+import Utility
+from datetime import datetime
 
 # Date format from here: 01-Jan-2018
 
@@ -13,8 +14,8 @@ SCHEDULED_TASK=(
     # argument (symbol/list of symbol, [args], type, tableName)
 
      # Start ticker, every day once
-    (CleanUp, [], ["0910"], ),         #0900
-    (Ticker, [], ["0915"], ),             #0915
-    (TradableStockCal, [], ["0918"], ),     #0918
+    #(CleanUp, [], ["0910"], ),         #0900
+    (Ticker, [], [datetime.strptime(str(Utility.TICKERSTART), '%H%M%S').strftime('%H%M')], ),             #0915
+    (TradableStockCal, [], [datetime.strptime(str(Utility.TRADABLESTOCKSTART), '%H%M%S').strftime('%H%M')], ),     #0918
     )
 

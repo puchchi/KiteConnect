@@ -7,7 +7,7 @@ def CleanUp():
     
     now = int(datetime.now().strftime("%H%M%S"))
     # Dont cleanup after 9:15am
-    if now >= TIMESTAMP1:
+    if now >= TICKERSTART:
         return
 
     print "Clean up starts..."

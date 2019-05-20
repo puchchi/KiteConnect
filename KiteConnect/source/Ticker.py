@@ -30,12 +30,13 @@ def on_connect(ws, response):
     logging.info("Connection successful.....")
     subscriberList = Utility.GetNSE500List()
     ws.subscribe(subscriberList)
+    #ws.subscribe([738561, 5633])
 
     # Set RELIANCE to tick in `full` mode.
     #ws.set_mode(ws.MODE_QUOTE, [738561])
-    #ws.set_mode(ws.MODE_FULL, [5633])
-    #ws.set_mode(ws.MODE_QUOTE, subscriberList)
+    #ws.set_mode(ws.MODE_QUOTE, [5633])
     ws.set_mode(ws.MODE_QUOTE, subscriberList)
+    #ws.set_mode(ws.MODE_QUOTE, subscriberList)
 
 def on_message(ws, payload, is_binary):
     if is_binary:
@@ -49,6 +50,10 @@ def on_close(ws, code, reason):
     logging.info("Closing websocket!")
     logging.info("Reason for closing websocket: " + str(reason))
     ws.stop()
+
+    logging.info("Exiting ticker process")
+    print "Exiting ticker process"
+    exit()
 
 def StartTicker():
 
@@ -86,7 +91,6 @@ class kCommand:
     def do(self):
         thread.start_new_thread(self.run_process, ())
         
-
     def get_name(self):
         return "Start sticker command"
 
