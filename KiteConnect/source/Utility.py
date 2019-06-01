@@ -5,6 +5,17 @@ import requests, json
 import pandas as pd
 import logging
 
+DATABASE_HOST = "localhost"
+DATABASE_NAME = "AutoTradingDB"
+DATABASE_USERNAME = "StockUser"
+DATABASE_PASSWORD = "StockPass"
+
+LEVELS_TABLENAME = "Levels"
+TODO_TABLENAME = "Todo"
+
+LEVEL_CROSS_TYPE_ENUM = ['up', 'down']
+TASK_TYPE_ENUM = ['buy', 'sell', 'tp_update', 'sl_update']
+
 HOME_DIR = path.dirname(path.dirname(path.abspath(__file__)))
 
 LOGGING_DIR = path.join(HOME_DIR, "Logs")

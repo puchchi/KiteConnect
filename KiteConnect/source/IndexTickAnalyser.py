@@ -2,7 +2,7 @@ from Utility import *
 from os import path
 from datetime import datetime
 from KiteOrderManager import KiteOrderManager
-from AnnualisedVolatility import AnnualisedVolatility
+from DatabaseManager import DatabaseManager
 import thread, os
 
 def Analyse(ws, ticks):
@@ -13,9 +13,28 @@ def Analyse(ws, ticks):
     if now >= int(TICKERSTART) and now < int(TRADINGCLOSE):
         Trade(ws, ticks)
     else:
-        #Trade(ws, ticks)
-       # ws.close()
         pass
+
+
+def Trade(ws, ticks):
+    for tick in ticks:
+        instrumentToken = tick['instrument_token']
+        try:
+            openPrice = tick['ohlc']['open']
+            lastPrice = tick['last_price']
+            instrumentToken = tick['instrumentToken']
+            levelCrossType = LEVEL_CROSS_TYPE_ENUM[0]
+            if lastPrice < openPrice:
+                levelCrossType = LEVEL_CROSS_TYPE_ENUM[1]
+
+            # Get tasks list from DB
+            dbInstance = DatabaseManager.GetInstance()
+            todoList = dbInstance.GetToDoTaskList(instrumentToken)
+
+            if todoList.__len__ == 0:
+                dbInstance.CreateOneSDLevels(instrumentToken, openPrice)
+            
+
 
 
 def Trade(ws, ticks):
