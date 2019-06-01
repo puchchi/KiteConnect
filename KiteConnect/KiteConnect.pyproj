@@ -21,7 +21,13 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="source\AnnualisedVolatility.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="source\CleanUp.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="source\IndexTickAnalyser.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="source\InitToken.py">

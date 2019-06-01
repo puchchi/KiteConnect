@@ -5,13 +5,15 @@ from KiteOrderManager import KiteOrderManager
 import thread, os
 
 def Analyse(ws, ticks):
+    print "Tick recieved for " + str(ticks.__len__())
+    
     now = int(datetime.now().strftime("%H%M%S"))
 
-    if now >= TICKERSTART and now < TRADABLESTOCKSTART:
+    if now >= int(TICKERSTART) and now < int(TRADABLESTOCKSTART):
         CollectStocks(ws, ticks)
-    elif now >= TRADABLESTOCKSTART and now < TRADINGSTART:
+    elif now >= int(TRADABLESTOCKSTART) and now < int(TRADINGSTART):
         instance = KiteOrderManager.GetInstance()
-    elif now >= TRADINGSTART and now < TRADINGCLOSE:
+    elif now >= int(TRADINGSTART) and now < int(TRADINGCLOSE):
         Trade(ws, ticks)
     else:
         #Trade(ws, ticks)
@@ -81,69 +83,76 @@ def Trade(ws, ticks):
 
 
 def BuyStock(ws, instrumentToken, lastPrice):
-    df = pd.DataFrame()
     try:
-        with open(path.join(TRADABLE_STOCK_LOCATION, str(instrumentToken)), 'r') as f:
-            df = pd.read_csv(f)
+
+        df = pd.DataFrame()
+        try:
+            with open(path.join(TRADABLE_STOCK_LOCATION, str(instrumentToken)), 'r') as f:
+                df = pd.read_csv(f)
+        except Exception as e:
+            pass        # No need to log, as many thread are working at same time
+
+        if df.columns.__len__() == 0:
+            return
+
+        targetPoint = (lastPrice * PROFIT_PERCENTAGE / 100).__format__('.1f')
+        stopLossPoint = (lastPrice * STOPLOSS_PERCENTAGE / 100).__format__('.1f')
+
+        # making market order
+        tradePrice = (lastPrice + (lastPrice * 0.01)).__format__('.1f')
+        symbol = df['symbol'][0]
+        quantity = df['quantity'][0]
+
+        instance = KiteOrderManager.GetInstance()
+        try:    
+            os.rename(path.join(TRADABLE_STOCK_LOCATION, str(instrumentToken)), path.join(TRADABLE_STOCK_LOCATION, str(instrumentToken) + '_done'))
+            print "Renamed tradable stock | " + str(instrumentToken)
+        except Exception as e:
+            pass        # No need to log, as many thread are working at same time
+        #instance.BuyOrder(symbol, tradePrice, targetPoint, stopLossPoint, quantity)
+
+        #Add order api here
+        print "Buy order triggered of " + symbol + " at " + str(tradePrice) + " with target point " + str(targetPoint) + " and stoploss point " + str(stopLossPoint)
+        logging.critical("Buy order triggered of " + symbol + " at " + str(tradePrice) + " with target point " + str(targetPoint) + " and stoploss point " + str(stopLossPoint))
+
+        ws.unsubscribe([instrumentToken,])
+        print "Unsubscribing from " + str(instrumentToken) + ", after placing order."
     except Exception as e:
-        pass        # No need to log, as many thread are working at same time
-
-    if df.columns.__len__() == 0:
-        return
-
-    targetPoint = (lastPrice * PROFIT_PERCENTAGE / 100).__format__('.1f')
-    stopLossPoint = (lastPrice * STOPLOSS_PERCENTAGE / 100).__format__('.1f')
-
-    # making market order
-    tradePrice = (lastPrice + (lastPrice * 0.01)).__format__('.1f')
-    symbol = df['symbol'][0]
-    quantity = df['quantity'][0]
-
-    instance = KiteOrderManager.GetInstance()
-    try:    
-        os.rename(path.join(TRADABLE_STOCK_LOCATION, str(instrumentToken)), path.join(TRADABLE_STOCK_LOCATION, str(instrumentToken) + '_done'))
-        print "Renamed tradable stock | " + str(instrumentToken)
-    except Exception as e:
-        pass        # No need to log, as many thread are working at same time
-    #instance.BuyOrder(symbol, tradePrice, targetPoint, stopLossPoint, quantity)
-
-    #Add order api here
-    print "Buy order triggered of " + symbol + " at " + str(tradePrice) + " with target point " + str(targetPoint) + " and stoploss point " + str(stopLossPoint)
-    logging.critical("Buy order triggered of " + symbol + " at " + str(tradePrice) + " with target point " + str(targetPoint) + " and stoploss point " + str(stopLossPoint))
-
-    ws.unsubscribe(instrumentToken)
-    print "Unsubscribing from " + str(instrumentToken) + ", after placing order."
+        None
 
 def SellStock(ws, instrumentToken, lastPrice):
-    df = pd.DataFrame()
     try:
-        with open(path.join(TRADABLE_STOCK_LOCATION, str(instrumentToken)), 'r') as f:
-            df = pd.read_csv(f)
+        df = pd.DataFrame()
+        try:
+            with open(path.join(TRADABLE_STOCK_LOCATION, str(instrumentToken)), 'r') as f:
+                df = pd.read_csv(f)
+        except Exception as e:
+            print e        # No need to log, as many thread are working at same time
+        if df.columns.__len__() == 0:
+            return
+
+        targetPoint = (lastPrice * PROFIT_PERCENTAGE / 100).__format__('.1f')
+        stopLossPoint = (lastPrice * STOPLOSS_PERCENTAGE / 100).__format__('.1f')
+
+        # making market order
+        tradePrice = (lastPrice - (lastPrice * 0.01)).__format__('.1f')
+        symbol = df['symbol'][0]
+        quantity = df['quantity'][0]
+
+        instance = KiteOrderManager.GetInstance()
+        try:    
+            os.rename(path.join(TRADABLE_STOCK_LOCATION, str(instrumentToken)), path.join(TRADABLE_STOCK_LOCATION, str(instrumentToken) + '_done'))
+            print "Renamed tradable stock | " + str(instrumentToken)
+        except Exception as e:
+            print e       
+        #instance.SellOrder(symbol, tradePrice, targetPoint, stopLossPoint, quantity)
+
+        #Add order api here
+        print "Sell order triggered of " + symbol + " at " + str(tradePrice) + " with target point " + str(targetPoint) + " and stoploss point " + str(stopLossPoint)
+        logging.critical("Sell order triggered of " + symbol + " at " + str(tradePrice) + " with target point " + str(targetPoint) + " and stoploss point " + str(stopLossPoint))
+
+        ws.unsubscribe([instrumentToken,])
+        print "Unsubscribing from " + str(instrumentToken) + ", after placing order."
     except Exception as e:
-        pass        # No need to log, as many thread are working at same time
-    if df.columns.__len__() == 0:
-        return
-
-    targetPoint = (lastPrice * PROFIT_PERCENTAGE / 100).__format__('.1f')
-    stopLossPoint = (lastPrice * STOPLOSS_PERCENTAGE / 100).__format__('.1f')
-
-    # making market order
-    tradePrice = (lastPrice - (lastPrice * 0.01)).__format__('.1f')
-    symbol = df['symbol'][0]
-    quantity = df['quantity'][0]
-
-    instance = KiteOrderManager.GetInstance()
-    try:    
-        os.rename(path.join(TRADABLE_STOCK_LOCATION, str(instrumentToken)), path.join(TRADABLE_STOCK_LOCATION, str(instrumentToken) + '_done'))
-        print "Renamed tradable stock | " + str(instrumentToken)
-    except Exception as e:
-        pass       
-    #instance.SellOrder(symbol, tradePrice, targetPoint, stopLossPoint, quantity)
-
-    #Add order api here
-    print "Sell order triggered of " + symbol + " at " + str(tradePrice) + " with target point " + str(targetPoint) + " and stoploss point " + str(stopLossPoint)
-    logging.critical("Sell order triggered of " + symbol + " at " + str(tradePrice) + " with target point " + str(targetPoint) + " and stoploss point " + str(stopLossPoint))
-
-    ws.unsubscribe(instrumentToken)
-    print "Unsubscribing from " + str(instrumentToken) + ", after placing order."
+        print e
 

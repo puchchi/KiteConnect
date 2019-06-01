@@ -2,9 +2,11 @@ from kiteconnect import KiteTicker
 from kiteconnect import KiteConnect
 
 import hashlib, time, requests, thread, logging
-import TickAnalyser, Utility
+from Utility import *
 from InitToken import TokenManager
 from multiprocessing import Process, Queue
+#from TickAnalyser import Analyse
+from IndexTickAnalyser import Analyse
 
 
 #kite = KiteConnect(api_key=API_KEY)
@@ -16,7 +18,7 @@ def on_ticks(ws, ticks):
     # Callback to receive ticks.
 
     try:
-        thread.start_new_thread(TickAnalyser.Analyse, (ws, ticks))
+        thread.start_new_thread(Analyse, (ws, ticks))
     except Exception as e:
         print "e"
         raise "Exception in on_ticks in Ticker.py"
@@ -28,14 +30,16 @@ def on_connect(ws, response):
     
     print "Connection successful....."
     logging.info("Connection successful.....")
-    subscriberList = Utility.GetNSE500List()
+    #subscriberList = Utility.GetNSE500List()
+    subscriberList = INDEX_FUTURE_DATA.keys()
+    
     ws.subscribe(subscriberList)
-    #ws.subscribe([738561, 5633])
+    #ws.subscribe([738561])
 
     # Set RELIANCE to tick in `full` mode.
-    #ws.set_mode(ws.MODE_QUOTE, [738561])
-    #ws.set_mode(ws.MODE_QUOTE, [5633])
-    ws.set_mode(ws.MODE_QUOTE, subscriberList)
+    #ws.set_mode(ws.MODE_FULL, [738561])
+    #ws.set_mode(ws.MODE_FULL, [5633])
+    #ws.set_mode(ws.MODE_QUOTE, subscriberList)
     #ws.set_mode(ws.MODE_QUOTE, subscriberList)
 
 def on_message(ws, payload, is_binary):
@@ -53,7 +57,7 @@ def on_close(ws, code, reason):
 
     logging.info("Exiting ticker process")
     print "Exiting ticker process"
-    exit()
+    #exit()
 
 def StartTicker():
 

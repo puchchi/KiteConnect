@@ -36,15 +36,15 @@ class KiteOrderManager():
 
     def BuyOrder(self, symbol, tradePrice, targetPoint, stoplossPoint, quantity):
         if ORDER_TYPE =='BO':
-            self.BuyBracketOrder(symbol, tradePrice, targetPoint, stoplossPoint, quantity)
+            return self.BuyBracketOrder(symbol, tradePrice, targetPoint, stoplossPoint, quantity)
         elif ORDER_TYPE == 'MIS':
-            self.BuyMISOrder(symbol, tradePrice, targetPoint, stoplossPoint, quantity)
+            return self.BuyMISOrder(symbol, tradePrice, targetPoint, stoplossPoint, quantity)
 
     def SellOrder(self, symbol, tradePrice, targetPoint, stoplossPoint, quantity):
         if ORDER_TYPE =='BO':
-            self.SellBracketOrder(symbol, tradePrice, targetPoint, stoplossPoint, quantity)
+            return self.SellBracketOrder(symbol, tradePrice, targetPoint, stoplossPoint, quantity)
         elif ORDER_TYPE == 'MIS':
-            self.SellMISOrder(symbol, tradePrice, targetPoint, stoplossPoint, quantity)
+            return self.SellMISOrder(symbol, tradePrice, targetPoint, stoplossPoint, quantity)
 
     def BuyBracketOrder(self, symbol, tradePrice, targetPoint, stoplossPoint, quantity):
         orderNo = self.kite.place_order(
@@ -66,6 +66,7 @@ class KiteOrderManager():
 
         print "Order for symol: "+ symbol + " for quantity " + str(quantity) + " placed at price " + str(tradePrice) + " .Order no is:" + str(orderNo)
         logging.info("Order for symol: "+ symbol + " for quantity " + str(quantity) + " placed at price " + str(tradePrice) + " .Order no is:" + str(orderNo))
+        return orderNo
 
     def BuyMISOrder(self, symbol, tradePrice, targetPoint, stoplossPoint, quantity):
         orderNo = self.kite.place_order(
@@ -87,6 +88,7 @@ class KiteOrderManager():
 
         print "Order for symol: "+ symbol + " for quantity " + str(quantity) + " placed at price " + str(tradePrice) + " .Order no is:" + str(orderNo)
         logging.info("Order for symol: "+ symbol + " for quantity " + str(quantity) + " placed at price " + str(tradePrice) + " .Order no is:" + str(orderNo))
+        return orderNo
 
     def SellBracketOrder(self, symbol, tradePrice, targetPoint, stoplossPoint, quantity):
         
@@ -109,6 +111,7 @@ class KiteOrderManager():
 
         print "Order for symol: "+ symbol + " for quantity " + str(quantity) + " placed at price " + str(tradePrice) + " .Order no is:" + str(orderNo)
         logging.info("Order for symol: "+ symbol + " for quantity " + str(quantity) + " placed at price " + str(tradePrice) + " .Order no is:" + str(orderNo))
+        return orderNo
 
     def SellMISOrder(self, symbol, tradePrice, targetPoint, stoplossPoint, quantity):
         orderNo = self.kite.place_order(
@@ -130,3 +133,8 @@ class KiteOrderManager():
 
         print "Order for symol: "+ symbol + " for quantity " + str(quantity) + " placed at price " + str(tradePrice) + " .Order no is:" + str(orderNo)
         logging.info("Order for symol: "+ symbol + " for quantity " + str(quantity) + " placed at price " + str(tradePrice) + " .Order no is:" + str(orderNo))
+        return orderNo
+
+    def GetOrdeHistory(self, orderNo):
+        orderHistory = self.kite.order_history(orderNo)
+        return orderHistory
