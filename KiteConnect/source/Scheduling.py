@@ -3,7 +3,7 @@ from os import path
 sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
 sys.path.append( path.dirname( path.abspath(__file__) ) )
 
-import Ticker, TradableStockCal, CleanUp
+import Ticker, TradableStockCal, CleanUp, CleanNCreateDBTables
 import Utility
 from datetime import datetime
 
@@ -15,6 +15,7 @@ SCHEDULED_TASK=(
 
      # Start ticker, every day once
     (CleanUp, [], ["0910"], ),         #0900
+    (CleanNCreateDBTables, [], ["0900"], ),
     (Ticker, [], [datetime.strptime(str(Utility.TICKERSTART), '%H%M%S').strftime('%H%M')], ),             #0915
  #   (TradableStockCal, [], [datetime.strptime(str(Utility.TRADABLESTOCKSTART), '%H%M%S').strftime('%H%M')], ),     #0918
     )

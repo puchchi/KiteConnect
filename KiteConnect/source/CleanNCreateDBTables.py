@@ -33,6 +33,7 @@ class kCommand:
             SQL = """ CREATE TABLE %s (InstrumentToken INT NOT NULL, Symbol VARCHAR(20), LevelType INT NOT NULL, 
                     LevelPrice FLOAT NOT NULL, PRIMARY KEY (InstrumentToken, LevelType)); """ % (levelTableName)
             self.cursor.execute(SQL)
+            print "Complete!!! Levels table"
         except Exception as e:
             print "Error in creating table Call function in CleanNCreateDBTables.py."
             print e
@@ -46,10 +47,11 @@ class kCommand:
             print e
 
         try:
-            SQL = """ CREATE TABLE %s (id INT NOT NULL AUTO_INCREMENT, InstrumentToken INT NOT NULL, Symbol VARCHAR(20), LevelType INT NOT NULL, 
-                    LevelPrice FLOAT NOT NULL, TargetPricePt FLOAT NOT NULL, StopLossPt FLOAT NOT NULL, TaskType VARCHAR(20),
-                   LevelCrossType VARCHAR(20), PRIMARY KEY (id)); """ % (todoTableName)
+            SQL = """ CREATE TABLE %s (InstrumentToken INT NOT NULL, Symbol VARCHAR(20), TPLevelType INT NOT NULL, 
+                    LevelPrice FLOAT NOT NULL, TargetPrice FLOAT NOT NULL, StopLoss FLOAT NOT NULL, TaskType VARCHAR(20),
+                   LevelCrossType VARCHAR(20), OrderID INT, PRIMARY KEY (InstrumentToken, TaskType)); """ % (todoTableName)
             self.cursor.execute(SQL)
+            print "Complete!!! Todo table"
         except Exception as e:
             print "Error in creating table Call function in CleanNCreateDBTables.py."
             print e

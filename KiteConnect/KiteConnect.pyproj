@@ -24,7 +24,13 @@
     <Compile Include="source\AnnualisedVolatility.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="source\CleanNCreateDBTables.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="source\CleanUp.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="source\DatabaseManager.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="source\IndexTickAnalyser.py">

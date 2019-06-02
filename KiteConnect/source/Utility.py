@@ -50,22 +50,22 @@ AVAILABLE_MARGIN = 30000 * 4.2        # Assuming 4.2x leavarege on Bracket order
 
 ORDER_TYPE = 'BO'          #'BO'
 
-TICKERSTART = '000005'     #91505     # 09:15:05 AM (added 5 second as time padding)
+TICKERSTART = '091500'     #91505     # 09:15:05 AM (added 5 second as time padding)
 TRADABLESTOCKSTART = '220400'     #91800     # 09:18:00 AMl
 TRADINGSTART = '092000'     #92000     # 09:20:05 AM
-TRADINGCLOSE = '152000'   #152000    # 03:20:00 PM
+TRADINGCLOSE = '153000'   #152000    # 03:20:00 PM
 
 PROFIT_PERCENTAGE = 1
 STOPLOSS_PERCENTAGE = 1
 
-INDEX_FUTURE_DATA = {14628098:{'underlyingsymbol':'NIFTY', 'tradingsymbol':'NIFTY19JUNFUT', 'expiry':'27JUN2019', 'tradable':False},
-                     14627842:{'underlyingsymbol':'BANKNIFTY', 'tradingsymbol':'BANKNIFTY19JUNFUT','expiry':'27JUN2019', 'tradable':False}}
+INDEX_FUTURE_DATA = {14628098:{'underlyingsymbol':'NIFTY', 'tradingsymbol':'NIFTY19JUNFUT', 'expiry':'27JUN2019', 'tradable':False, 'quantity':75},}
+                     #14627842:{'underlyingsymbol':'BANKNIFTY', 'tradingsymbol':'BANKNIFTY19JUNFUT','expiry':'27JUN2019', 'tradable':False}}
 
 INDEX_FUTURES_FUTURE_DATA = {11870210:{'underlyingsymbol':'NIFTY', 'tradingsymbol':'NIFTY19JULFUT', 'expiry':'25JUL2019', 'tradable':True},
                      11869954:{'underlyingsymbol':'BANKNIFTY', 'tradingsymbol':'BANKNIFTY19JULFUT','expiry':'25JUL2019', 'tradable':False}}
 
 FIB_LEVELS = [0.236, 0.382, 0.5, 0.618, 0.786, 0.888, 1.236, 1.618]
-PRICE_PADDING = 0.0002
+PRICE_PADDING = 0.00025
 
 # Request tokken url: https://kite.trade/connect/login?v=3&api_key=t7cybf56wqczkl68
 #curl https://api.kite.trade/session/token -H "X-Kite-Version: 3" -d "api_key=t7cybf56wqczkl68" -d "request_token=7yg1Fh0Eh5vX2I06AnNZxfwUBa7VqJzQ" -d "checksum=ca2ab4fa3819d46578dde379799f64d7c15169e83ed5d6d8d9b5c7988d7d8436"

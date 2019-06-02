@@ -15,143 +15,104 @@ def Analyse(ws, ticks):
     else:
         pass
 
-
 def Trade(ws, ticks):
     for tick in ticks:
-        instrumentToken = tick['instrument_token']
         try:
+            instrumentToken = tick['instrument_token']
             openPrice = tick['ohlc']['open']
             lastPrice = tick['last_price']
-            instrumentToken = tick['instrumentToken']
             levelCrossType = LEVEL_CROSS_TYPE_ENUM[0]
             if lastPrice < openPrice:
                 levelCrossType = LEVEL_CROSS_TYPE_ENUM[1]
 
             # Get tasks list from DB
             dbInstance = DatabaseManager.GetInstance()
-            todoList = dbInstance.GetToDoTaskList(instrumentToken)
+            todoTaskList = dbInstance.GetToDoTaskList(instrumentToken)
 
-            if todoList.__len__ == 0:
-                dbInstance.CreateOneSDLevels(instrumentToken, openPrice)
-            
-
-
-
-def Trade(ws, ticks):
-    for tick in ticks:
-        instrumentToken = tick['instrument_token']
-        try:
-            #with open(path.join(TRADABLE_STOCK_LOCATION, str(instrumentToken)), 'r') as f:
-            tradableStockList = os.listdir(TRADABLE_STOCK_LOCATION)
-            stockFound = False
-            stockMarkedDone = True
-            for file in tradableStockList:
-                if file.find(str(instrumentToken))!=-1:
-                    stockFound = True
-                    if file == str(instrumentToken):
-                        stockMarkedDone = False
-                    break
-
-            if stockFound == False:
-                # Now create file
-                print "Creating trading table for instrument: " + str(instrumentToken)
-                obj = AnnualisedVolatility(INDEX_FUTURE_DATA[instrumentToken]['underlyingsymbol'], INDEX_FUTURE_DATA[instrumentToken]['expiry'])
-
-                annualVolatility = obj.GetAnnualisedVolatility()
-                print "Annualised volatility: " + str(annualVolatility)
-                price = tick['ohlc']['open']
-                # 1 sd formula = annual volatility * price * sqrt(1)/sqrt(365)      // Here 1 is no of days
-                _1SD = annualVolatility * price / 19.105 / 100
-                fibLevels = [_1SD * i for i in FIB_LEVELS]
-                fibUpperLevels = [price + i for i in fibLevels]
-                fibLowerLevels = [price - i for i in fibLevels]
-
-                # inserting price at 0th index, so that it can used as sl
-                fibUpperLevels.insert(0, price)
-                fibLowerLevels.insert(0, price)
-
-                stockDict = {'underlying':INDEX_FUTURE_DATA[instrumentToken]['underlyingsymbol'],
-                             'upperlevels':fibUpperLevels, 'lowerlevels':fibLowerLevels}
-                stockData = json.dumps(stockDict)
-                print stockData
-                with open(path.join(TRADABLE_STOCK_LOCATION, str(instrumentToken)), 'w+') as f:
-                    f.write(stockData)
-
-            elif stockMarkedDone == False:
-                with open(path.join(TRADABLE_STOCK_LOCATION, str(instrumentToken)), 'r') as f:
-                    
-                    stockDict = json.loads(f.read())
-                    lastPrice = tick['last_price']
-                    openPrice = tick['ohlc']['open']
-                    if lastPrice < openPrice:
-                        lowerLevels = stockDict['lowerlevels']
-                        sellFlag = False
-                        tp=0.0
-                        sl=lowerLevels[0]
-                        ran = range(1, lowerLevels.__len__() -1)
-                        ran.reverse()
-                        if lastPrice > lowerLevels[ran[0]]:
-                            for i in ran:
-                                if lastPrice*(1 - PRICE_PADDING) <= lowerLevels[i]:
-                                    tp = float(lowerLevels[i+1])
-                                    sl = float(lowerLevels[i-1])
-                                    sellFlag = True
-                                    break
-                        if sellFlag:
-                            try:    
-                                quantity = AVAILABLE_MARGIN / lastPrice
-                                orderNo = SellStock(stockDict['underlying'], lastPrice, tp, sl, quantity, INDEX_FUTURE_DATA[instrumentToken]['tradable'])
-                                f.close()
-                                os.rename(path.join(TRADABLE_STOCK_LOCATION, str(instrumentToken)), path.join(TRADABLE_STOCK_LOCATION, str(instrumentToken) + '_done'))
-                                print "Renamed tradable stock | " + str(instrumentToken)
-                                with open(path.join(TRADABLE_STOCK_LOCATION, str(instrumentToken) + '_place_order'), 'w+') as f: 
-                                    f.write(str(orderNo))
-                            except Exception as e:
-                                print e   
-
-                    else:
-                        upperLevels = stockDict['upperlevels']
-                        buyFlag = False
-                        tp=0.0
-                        sl=upperLevels[0]
-                        ran = range(1, upperLevels.__len__() -1)
-                        ran.reverse()
-                        if lastPrice < upperLevels[ran[0]]:
-                            for i in ran:
-                                if lastPrice *(1+ PRICE_PADDING) <= upperLevels[i]:
-                                    tp = float(upperLevels[i+1])
-                                    sl = float(upperLevels[i-1])
-                                    buyFlag = True
-                                    break
-                        if buyFlag:
-                            try:    
-                                quantity = AVAILABLE_MARGIN / lastPrice
-                                orderNo = BuyStock(stockDict['underlying'], lastPrice, tp, sl, quantity, INDEX_FUTURE_DATA[instrumentToken]['tradable'])
-                                f.close()
-                                os.rename(path.join(TRADABLE_STOCK_LOCATION, str(instrumentToken)), path.join(TRADABLE_STOCK_LOCATION, str(instrumentToken) + '_done'))
-                                print "Renamed tradable stock | " + str(instrumentToken)
-                                with open(path.join(TRADABLE_STOCK_LOCATION, str(instrumentToken) + '_place_order'), 'w+') as f: 
-                                    f.write(str(orderNo))
-                            except Exception as e:
-                                print e
-                                pass        # No need to log, as many thread are working at same time
+            if todoTaskList.__len__() == 0:
+                dbInstance.CreateOneSDLevelsAndSetupInitialTask(instrumentToken, openPrice)
             else:
-                print "Time to check n update sl & tp"
-                for stock in tradableStockList:
-                    if str(instrumentToken) + '_place_order' == stock:
-                        with open(path.join(TRADABLE_STOCK_LOCATION, str(instrumentToken) + '_place_order'), 'r') as f: 
-                            orderNo = f.read()
-                            if GetOrderStatus(orderNo) == True:
-                                with open(path.join(TRADABLE_STOCK_LOCATION, str(instrumentToken) + '_complete_order'), 'r') as f: 
-                                    GetOrderHistory(orderNo)
+                # todo table index [0:InstrumentToken, 1:symbol, 2:TPLevelType, 3:LevelPrice, 4:TP, 5:SL, 6:TaskType, 7:LevelCrossType, 8:OrderNo(Null)
+                for task in todoTaskList:
+                    if task[7] == levelCrossType and lastPrice > task[3]:
+                        PlacePriceUpOrder(task)
+                    elif task[7] == levelCrossType and lastPrice < task[3]:
+                        PlacePriceDownOrder(task)
+
+        except Exception as e:
+            print "Exception in IndexTickAnalyser::Trade()"
+            print e
+
+def PlacePriceUpOrder(task, lastPrice):
+    if task[6] == TASK_TYPE_ENUM[0]:        #'buy'
+        # First of all delete this task from db, if function is able to delete, it means
+        # no other thread can process this task even if it has got data extracted from db
+        try:
+            dbInstance = DatabaseManager.GetInstance()
+            if dbInstance.DeleteToDoTask(task) > 0:
+                levelType = task[2]
+                # Place order
+                buyOrderNo = BuyStock(task[1], lastPrice, task[4], task[5], INDEX_FUTURE_DATA[task[0]]['quantity'], INDEX_FUTURE_DATA[task[0]]['tradable'])
+                
+                if 0:
+                    # Now check status of this order and on completion, put 2 todo order in db
+                    while GetOrderStatus(orderNo) == False:
+                        time.sleep(5)
+
+                    # We are here, it means buy order completed
+                    childOrder = GetChildOrder(orderNo)
+                    for order in childOrder:
+                        if order['order_type']=='LIMIT':
+                            orderId = order['order_id']
+                            levelPrice = order['price']*(1-0.0005)
+                            nxtLevel = dbInstance.GetNextLevel(task[0], levelType)
+                            if nxtLevel.__len__() != 1:
+                                print "Critical error"
+                                return
+                            nextTP = nxtLevel[0][1]
+                            nextLevelType = nxtLevel[0][0]
+                            dbInstance.CreateNewTask(task[0], task[1], nextLevelType, levelPrice, nextTP, 0.0, TASK_TYPE_ENUM[2], LEVEL_CROSS_TYPE_ENUM[0], orderId)
+                    
+                        elif order['order_type'] == 'SL':
+                            orderId = order['order_id']
+                            levelPrice = order['price']*(1-0.0005)
+                            nxtLevel = dbInstance.GetNextLevel(task[0], levelType)
+                            if nxtLevel.__len__() != 1:
+                                print "Critical error"
+                                return
+                            nextTP = nxtLevel[0][1]
+                            nextLevelType = nxtLevel[0][0]
+                            dbInstance.CreateNewTask(task[0], task[1], nextLevelType, levelPrice, nextTP, 0.0, TASK_TYPE_ENUM[2], LEVEL_CROSS_TYPE_ENUM[0], orderId)
+                    
+        except Exception as e:
+            print e
+
+    elif task[6] == TASK_TYPE_ENUM[2]:      #'tp_update'
+        pass
+    elif task[6] == TASK_TYPE_ENUM[3]:      #'sl_update'
+        pass
+
+
+def PlacePriceDownOrder(task, lastPrice):
+    if task[6] == TASK_TYPE_ENUM[1]:        #'sell'
+        # First of all delete this task from db, if function is able to delete, it means
+        # no other thread can process this task even if it has got data extracted from db
+        try:
+            dbInstance = DatabaseManager.GetInstance()
+            if dbInstance.DeleteToDoTask(task) > 0:
+                levelType = task[2]
+                # Place order
+                sellOrderNo = SellStock(task[1], lastPrice, task[4], task[5], INDEX_FUTURE_DATA[task[0]]['quantity'], INDEX_FUTURE_DATA[task[0]]['tradable'])
+                
         except Exception as e:
             print e
 
 def BuyStock(symbol, lastPrice, tp, sl, quantity, istradable):
     try:
         print "In buy"
-        targetPoint = abs(lastPrice-tp)
-        stopLossPoint = abs(lastPrice-sl)
+        targetPoint = int(abs(lastPrice-tp))
+        stopLossPoint = int(abs(lastPrice-sl))
+        trailingSL = stopLossPoint
 
         # making market order
         tradePrice = (lastPrice + (lastPrice * 0.001)).__format__('.2f')
@@ -159,7 +120,7 @@ def BuyStock(symbol, lastPrice, tp, sl, quantity, istradable):
         orderNo = 0
         if istradable:
             instance = KiteOrderManager.GetInstance()
-            #orderNo = instance.BuyOrder(symbol, tradePrice, targetPoint, stopLossPoint, quantity)
+            orderNo = instance.BuyOrder(symbol, tradePrice, targetPoint, stopLossPoint, trailingSL, quantity)
 
         #Add order api here
         print "Buy order triggered of " + symbol + " at " + str(tradePrice) + " with target point " + str(targetPoint) + " and stoploss point " + str(stopLossPoint)
@@ -172,8 +133,9 @@ def BuyStock(symbol, lastPrice, tp, sl, quantity, istradable):
 def SellStock(symbol, lastPrice, tp, sl, quantity, istradable):
     try:
         print "In sell"
-        targetPoint = abs(lastPrice-tp)
-        stopLossPoint = abs(lastPrice-sl)
+        targetPoint = int(abs(lastPrice-tp))
+        stopLossPoint = int(abs(lastPrice-sl))
+        trailingSL = stopLossPoint
 
         # making market order
         tradePrice = (lastPrice - (lastPrice * 0.001)).__format__('.2f')
@@ -181,7 +143,7 @@ def SellStock(symbol, lastPrice, tp, sl, quantity, istradable):
         orderNo = 0
         if istradable:
             instance = KiteOrderManager.GetInstance()
-            orderNo = instance.SellOrder(symbol, tradePrice, targetPoint, stopLossPoint, quantity)
+            orderNo = instance.SellOrder(symbol, tradePrice, targetPoint, stopLossPoint, trailingSL, quantity)
 
         #Add order api here
         print "Sell order triggered of " + symbol + " at " + str(tradePrice) + " with target point " + str(targetPoint) + " and stoploss point " + str(stopLossPoint)
@@ -207,12 +169,14 @@ def GetOrderStatus(orderNo):
 def GetChildOrder(orderNo):
     try:
         instance = KiteOrderManager.GetInstance()
-        orderHistory = instance.GetOrdeHistory(orderNo)
+        orders = instance.GetOrders()
         childOrder = []
-        for order in orderHistory:
+        for order in orders:
             if order['parent_order_id'] == str(orderNo):
-                pass
+                childOrder.append(order)
+        return childOrder
     except Exception as e:
         print "Exception in IndexTickAnalyser::GetOrderStatus()"
         print e
         return False 
+    return []
