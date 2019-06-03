@@ -101,7 +101,6 @@ class kCommand:
 
 
 if __name__=='__main__':
-    print "hi"
     dbCmd = CleanNCreateDBTables.kCommand()
     #dbCmd.do()
     StartTicker()

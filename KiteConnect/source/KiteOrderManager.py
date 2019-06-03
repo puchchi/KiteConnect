@@ -149,3 +149,4 @@ class KiteOrderManager():
 
     def ModifyBOSlOrder(self, orderId, triggerPrice):
         self.kite.modify_order(variety='bo', order_id=orderId, trigger_price=triggerPrice)
+

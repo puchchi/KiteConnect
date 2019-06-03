@@ -14,8 +14,8 @@ SCHEDULED_TASK=(
     # argument (symbol/list of symbol, [args], type, tableName)
 
      # Start ticker, every day once
-    (CleanUp, [], ["0910"], ),         #0900
-    (CleanNCreateDBTables, [], ["1534"], ),
+    #(CleanUp, [], ["0910"], ),         #0900
+    (CleanNCreateDBTables, [], ["0900"], ),
     (Ticker, [], [datetime.strptime(str(Utility.TICKERSTART), '%H%M%S').strftime('%H%M')], ),             #0915
  #   (TradableStockCal, [], [datetime.strptime(str(Utility.TRADABLESTOCKSTART), '%H%M%S').strftime('%H%M')], ),     #0918
     )

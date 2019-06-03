@@ -1,3 +1,8 @@
+import sys
+from os import path
+sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
+sys.path.append( path.dirname( path.dirname( path.dirname(path.abspath(__file__)) ) ) )
+
 from Utility import *
 from os import path
 from datetime import datetime
@@ -73,8 +78,6 @@ def PlacePriceUpOrder(task, lastPrice):
                 # Place order
                 buyOrderNo = BuyStock(task[1], lastPrice, task[4], task[5], INDEX_FUTURE_DATA[task[0]]['quantity'], INDEX_FUTURE_DATA[task[0]]['tradable'])
                 
-                #removeme
-                buyOrderNo = '190603001530750'
                 # Now check status of this order and on completion, put 2 todo order in db
                 while GetOrderStatus(buyOrderNo) == False:
                     time.sleep(5)
@@ -167,10 +170,8 @@ def SetSlUpdateOrder_UP(task):
     levelType = task[2]
     nextSL = task[3]        # current level(old tp) will be new sl
     dbInstance = DatabaseManager.GetInstance()
-    #prevLevel = dbInstance.GetPrevLevel(task[0], levelType)
     currentLevel = dbInstance.GetCurrentLevel(task[0], levelType)
     if currentLevel.__len__() >0:
-        #nextSL = prevLevel[0][1]
         nxtLevel = dbInstance.GetNextLevel(task[0], levelType)
         if nxtLevel.__len__() >0:
             nextLevelType = nxtLevel[0][0]
@@ -270,7 +271,7 @@ def SetTpUpdateNSlUpdateOrder_DOWN(task, childOrder):
         if nxtLevel.__len__() >0:
             nextTP = nxtLevel[0][1]
             nextLevelType = nxtLevel[0][0]
-            dbInstance.CreateNewTask(task[0], task[1], nextLevelType, levelPrice, nextTP, 0.0, TASK_TYPE_ENUM[2], LEVEL_CROSS_TYPE_ENUM[0], tpOrderID)
+            dbInstance.CreateNewTask(task[0], task[1], nextLevelType, levelPrice, nextTP, 0.0, TASK_TYPE_ENUM[2], LEVEL_CROSS_TYPE_ENUM[1], tpOrderID)
 
     if slFound:
         levelPrice = tpOfPosition
@@ -281,7 +282,7 @@ def SetTpUpdateNSlUpdateOrder_DOWN(task, childOrder):
             nxtLevel = dbInstance.GetNextLevel(task[0], levelType)
             if nxtLevel.__len__() >0:
                 nextLevelType = nxtLevel[0][0]
-                dbInstance.CreateNewTask(task[0], task[1], nextLevelType, levelPrice, 0.0, nextSL, TASK_TYPE_ENUM[3], LEVEL_CROSS_TYPE_ENUM[0], slOrderID)
+                dbInstance.CreateNewTask(task[0], task[1], nextLevelType, levelPrice, 0.0, nextSL, TASK_TYPE_ENUM[3], LEVEL_CROSS_TYPE_ENUM[1], slOrderID)
                          
 def SetTpUpdateOrder_DOWN(task):
     levelType = task[2]
@@ -292,21 +293,19 @@ def SetTpUpdateOrder_DOWN(task):
     if nxtLevel.__len__() >0:
         nextTP = nxtLevel[0][1]
         nextLevelType = nxtLevel[0][0]
-        dbInstance.CreateNewTask(task[0], task[1], nextLevelType, levelPrice, nextTP, 0.0, TASK_TYPE_ENUM[2], LEVEL_CROSS_TYPE_ENUM[0], task[8])
+        dbInstance.CreateNewTask(task[0], task[1], nextLevelType, levelPrice, nextTP, 0.0, TASK_TYPE_ENUM[2], LEVEL_CROSS_TYPE_ENUM[1], task[8])
 
 def SetSlUpdateOrder_DOWN(task):
     levelType = task[2]
-
+    nextSL = task[3]        # current level(old tp) will be new sl
     dbInstance = DatabaseManager.GetInstance()
-    prevLevel = dbInstance.GetPrevLevel(task[0], levelType)
-    if prevLevel.__len__() >0:
-        nextSL = prevLevel[0][1]
+    currentLevel = dbInstance.GetCurrentLevel(task[0], levelType)
+    if currentLevel.__len__() >0:
         nxtLevel = dbInstance.GetNextLevel(task[0], levelType)
         if nxtLevel.__len__() >0:
             nextLevelType = nxtLevel[0][0]
-            nextLevelPrice = nxtLevel[0][1]
-            dbInstance.CreateNewTask(task[0], task[1], nextLevelType, nextLevelPrice, 0.0, nextSL, TASK_TYPE_ENUM[3], LEVEL_CROSS_TYPE_ENUM[0], task[8])
-
+            nextLevelPrice = currentLevel[0][1]
+            dbInstance.CreateNewTask(task[0], task[1], nextLevelType, nextLevelPrice, 0.0, nextSL, TASK_TYPE_ENUM[3], LEVEL_CROSS_TYPE_ENUM[1], task[8])
 
 def BuyStock(symbol, lastPrice, tp, sl, quantity, istradable):
     try:
