@@ -63,7 +63,7 @@ class KiteOrderManager():
                 trigger_price=None,
                 squareoff=targetPoint,
                 stoploss=stoplossPoint,
-                trailing_stoploss=trailingSL,
+                trailing_stoploss=None,
                 tag=None)
 
         print "Order for symol: "+ symbol + " for quantity " + str(quantity) + " placed at price " + str(tradePrice) + " .Order no is:" + str(orderNo)
@@ -108,7 +108,7 @@ class KiteOrderManager():
                 trigger_price=None,
                 squareoff=targetPoint,
                 stoploss=stoplossPoint,
-                trailing_stoploss=trailingSL,
+                trailing_stoploss=None,
                 tag=None)
 
         print "Order for symol: "+ symbol + " for quantity " + str(quantity) + " placed at price " + str(tradePrice) + " .Order no is:" + str(orderNo)
@@ -137,6 +137,15 @@ class KiteOrderManager():
         logging.info("Order for symol: "+ symbol + " for quantity " + str(quantity) + " placed at price " + str(tradePrice) + " .Order no is:" + str(orderNo))
         return orderNo
 
-    def GetOrdeHistory(self, orderNo):
+    def GetOrderHistory(self, orderNo):
         orderHistory = self.kite.order_history(orderNo)
         return orderHistory
+
+    def GetOrders(self):
+        return self.kite.orders()
+
+    def ModifyBOTpOrder(self, orderId, price):
+        self.kite.modify_order(variety='bo', order_id=orderId, price=price)
+
+    def ModifyBOSlOrder(self, orderId, triggerPrice):
+        self.kite.modify_order(variety='bo', order_id=orderId, trigger_price=triggerPrice)

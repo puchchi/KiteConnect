@@ -3,7 +3,7 @@ from os import path
 from datetime import datetime
 from KiteOrderManager import KiteOrderManager
 from DatabaseManager import DatabaseManager
-import thread, os
+import thread, os, time
 
 def Analyse(ws, ticks):
     print "Tick recieved for " + str(ticks.__len__())
@@ -34,10 +34,10 @@ def Trade(ws, ticks):
             else:
                 # todo table index [0:InstrumentToken, 1:symbol, 2:TPLevelType, 3:LevelPrice, 4:TP, 5:SL, 6:TaskType, 7:LevelCrossType, 8:OrderNo(Null)
                 for task in todoTaskList:
-                    if task[7] == levelCrossType and lastPrice > task[3]:
-                        PlacePriceUpOrder(task)
-                    elif task[7] == levelCrossType and lastPrice < task[3]:
-                        PlacePriceDownOrder(task)
+                    if task[7] == LEVEL_CROSS_TYPE_ENUM[0] and levelCrossType == LEVEL_CROSS_TYPE_ENUM[0] and lastPrice > task[3]:
+                        PlacePriceUpOrder(list(task), lastPrice)
+                    elif task[7] == LEVEL_CROSS_TYPE_ENUM[1] and levelCrossType == LEVEL_CROSS_TYPE_ENUM[1] and lastPrice < task[3]:
+                        PlacePriceDownOrder(list(task), lastPrice)
 
         except Exception as e:
             print "Exception in IndexTickAnalyser::Trade()"
@@ -48,49 +48,134 @@ def PlacePriceUpOrder(task, lastPrice):
         # First of all delete this task from db, if function is able to delete, it means
         # no other thread can process this task even if it has got data extracted from db
         try:
-            dbInstance = DatabaseManager.GetInstance()
-            if dbInstance.DeleteToDoTask(task) > 0:
+                dbInstance = DatabaseManager.GetInstance()
+            #if dbInstance.DeleteToDoTask(task) > 0:
                 levelType = task[2]
+                tp = task[4]
+                sl = task[5]
+                prevTp = tp
+                while 1:
+                    nextLevel = dbInstance.GetNextLevel(task[0], levelType)
+                    if nextLevel.__len__() == 0:
+                        break
+                    prevLevel = dbInstance.GetPrevLevel(task[0], levelType)
+                    if prevLevel.__len__() == 0:
+                        break
+                    if lastPrice > nextLevel[0][1]:
+                        levelType = nextLevel[0][0]
+                    else:
+                        tp = nextLevel[0][1]
+                        sl = prevLevel[0][1]
+                        break
+                task[2] = levelType
+                task[4] = tp
+                task[5] = sl
                 # Place order
                 buyOrderNo = BuyStock(task[1], lastPrice, task[4], task[5], INDEX_FUTURE_DATA[task[0]]['quantity'], INDEX_FUTURE_DATA[task[0]]['tradable'])
                 
-                if 0:
-                    # Now check status of this order and on completion, put 2 todo order in db
-                    while GetOrderStatus(orderNo) == False:
-                        time.sleep(5)
+                #removeme
+                buyOrderNo = '190603001530750'
+                # Now check status of this order and on completion, put 2 todo order in db
+                while GetOrderStatus(buyOrderNo) == False:
+                    time.sleep(5)
 
-                    # We are here, it means buy order completed
-                    childOrder = GetChildOrder(orderNo)
-                    for order in childOrder:
-                        if order['order_type']=='LIMIT':
-                            orderId = order['order_id']
-                            levelPrice = order['price']*(1-0.0005)
-                            nxtLevel = dbInstance.GetNextLevel(task[0], levelType)
-                            if nxtLevel.__len__() != 1:
-                                print "Critical error"
-                                return
-                            nextTP = nxtLevel[0][1]
-                            nextLevelType = nxtLevel[0][0]
-                            dbInstance.CreateNewTask(task[0], task[1], nextLevelType, levelPrice, nextTP, 0.0, TASK_TYPE_ENUM[2], LEVEL_CROSS_TYPE_ENUM[0], orderId)
-                    
-                        elif order['order_type'] == 'SL':
-                            orderId = order['order_id']
-                            levelPrice = order['price']*(1-0.0005)
-                            nxtLevel = dbInstance.GetNextLevel(task[0], levelType)
-                            if nxtLevel.__len__() != 1:
-                                print "Critical error"
-                                return
-                            nextTP = nxtLevel[0][1]
-                            nextLevelType = nxtLevel[0][0]
-                            dbInstance.CreateNewTask(task[0], task[1], nextLevelType, levelPrice, nextTP, 0.0, TASK_TYPE_ENUM[2], LEVEL_CROSS_TYPE_ENUM[0], orderId)
+                # We are here, it means buy order completed
+                childOrder = GetChildOrder(buyOrderNo)
+                SetTpUpdateNSlUpdateOrder_UP(task, childOrder)
                     
         except Exception as e:
             print e
 
     elif task[6] == TASK_TYPE_ENUM[2]:      #'tp_update'
-        pass
+        try:
+            dbInstance = DatabaseManager.GetInstance()
+            if dbInstance.DeleteToDoTask(task) > 0:
+                kiteInstance = KiteOrderManager.GetInstance()
+                kiteInstance.ModifyBOTpOrder(task[8], task[4])
+                SetTpUpdateOrder_UP(task)
+        except Exception as e:
+            print e
+
     elif task[6] == TASK_TYPE_ENUM[3]:      #'sl_update'
-        pass
+        try:
+            dbInstance = DatabaseManager.GetInstance()
+            if dbInstance.DeleteToDoTask(task) > 0:
+                kiteInstance = KiteOrderManager.GetInstance()
+                kiteInstance.ModifyBOSlOrder(task[8], task[5])
+                SetSlUpdateOrder_UP(task)
+        except Exception as e:
+            print e
+
+def SetTpUpdateNSlUpdateOrder_UP(task, childOrder):
+    tpFound = False
+    slFound = False
+
+    tpOfPosition = 0
+    tpOrderID = 0
+
+    slOfPosition = 0
+    slOrderID = 0
+    for order in childOrder:
+        if order['order_type']=='LIMIT':
+            tpFound = True
+            tpOrderID = order['order_id']
+            tpOfPosition = order['price']        
+        elif order['order_type'] == 'SL':
+            slFound = True
+            slOrderID = order['order_id']
+
+    dbInstance = DatabaseManager.GetInstance()
+
+    # This level is already 1 down of current tp, so we need to get next level type then set tpupdate n slupdate task
+    levelType = task[2]
+    tmpNxtLevel = dbInstance.GetNextLevel(task[0], levelType)
+    if tmpNxtLevel.__len__()==0:
+        return
+    levelType = tmpNxtLevel[0][0]
+
+    if tpFound:
+        levelPrice = tpOfPosition*(1-0.0005)
+        nxtLevel = dbInstance.GetNextLevel(task[0], levelType)
+        if nxtLevel.__len__() >0:
+            nextTP = nxtLevel[0][1]
+            nextLevelType = nxtLevel[0][0]
+            dbInstance.CreateNewTask(task[0], task[1], nextLevelType, levelPrice, nextTP, 0.0, TASK_TYPE_ENUM[2], LEVEL_CROSS_TYPE_ENUM[0], tpOrderID)
+
+    if slFound:
+        levelPrice = tpOfPosition
+        # Only first time we need prev level, for other time, we need next level
+        prevLevel = dbInstance.GetPrevLevel(task[0], levelType)
+        if prevLevel.__len__() >0:
+            nextSL = prevLevel[0][1]
+            nxtLevel = dbInstance.GetNextLevel(task[0], levelType)
+            if nxtLevel.__len__() >0:
+                nextLevelType = nxtLevel[0][0]
+                dbInstance.CreateNewTask(task[0], task[1], nextLevelType, levelPrice, 0.0, nextSL, TASK_TYPE_ENUM[3], LEVEL_CROSS_TYPE_ENUM[0], slOrderID)
+                         
+def SetTpUpdateOrder_UP(task):
+    levelType = task[2]
+    levelPrice = task[4]*(1-0.0005)
+
+    dbInstance = DatabaseManager.GetInstance()
+    nxtLevel = dbInstance.GetNextLevel(task[0], levelType)
+    if nxtLevel.__len__() >0:
+        nextTP = nxtLevel[0][1]
+        nextLevelType = nxtLevel[0][0]
+        dbInstance.CreateNewTask(task[0], task[1], nextLevelType, levelPrice, nextTP, 0.0, TASK_TYPE_ENUM[2], LEVEL_CROSS_TYPE_ENUM[0], task[8])
+
+def SetSlUpdateOrder_UP(task):
+    levelType = task[2]
+    nextSL = task[3]        # current level(old tp) will be new sl
+    dbInstance = DatabaseManager.GetInstance()
+    #prevLevel = dbInstance.GetPrevLevel(task[0], levelType)
+    currentLevel = dbInstance.GetCurrentLevel(task[0], levelType)
+    if currentLevel.__len__() >0:
+        #nextSL = prevLevel[0][1]
+        nxtLevel = dbInstance.GetNextLevel(task[0], levelType)
+        if nxtLevel.__len__() >0:
+            nextLevelType = nxtLevel[0][0]
+            nextLevelPrice = currentLevel[0][1]
+            dbInstance.CreateNewTask(task[0], task[1], nextLevelType, nextLevelPrice, 0.0, nextSL, TASK_TYPE_ENUM[3], LEVEL_CROSS_TYPE_ENUM[0], task[8])
 
 
 def PlacePriceDownOrder(task, lastPrice):
@@ -101,11 +186,127 @@ def PlacePriceDownOrder(task, lastPrice):
             dbInstance = DatabaseManager.GetInstance()
             if dbInstance.DeleteToDoTask(task) > 0:
                 levelType = task[2]
+                tp = task[4]
+                sl = task[5]
+                prevTp = tp
+                while 1:
+                    nextLevel = dbInstance.GetNextLevel(task[0], levelType)
+                    if nextLevel.__len__() == 0:
+                        break
+                    prevLevel = dbInstance.GetPrevLevel(task[0], levelType)
+                    if prevLevel.__len__() == 0:
+                        break
+                    if lastPrice < nextLevel[0][1]:
+                        levelType = nextLevel[0][0]
+                    else:
+                        tp = nextLevel[0][1]
+                        sl = prevLevel[0][1]
+                        break
+                task[2] = levelType
+                task[4] = tp
+                task[5] = sl
                 # Place order
                 sellOrderNo = SellStock(task[1], lastPrice, task[4], task[5], INDEX_FUTURE_DATA[task[0]]['quantity'], INDEX_FUTURE_DATA[task[0]]['tradable'])
-                
+                # Now check status of this order and on completion, put 2 todo order in db
+                while GetOrderStatus(sellOrderNo) == False:
+                    time.sleep(5)
+
+                # We are here, it means buy order completed
+                childOrder = GetChildOrder(sellOrderNo)
+                SetTpUpdateNSlUpdateOrder_DOWN(task, childOrder)
         except Exception as e:
             print e
+
+    elif task[6] == TASK_TYPE_ENUM[2]:      #'tp_update'
+        try:
+            dbInstance = DatabaseManager.GetInstance()
+            if dbInstance.DeleteToDoTask(task) > 0:
+                kiteInstance = KiteOrderManager.GetInstance()
+                kiteInstance.ModifyBOTpOrder(task[8], task[4])
+                SetTpUpdateOrder_DOWN(task)
+        except Exception as e:
+            print e
+
+    elif task[6] == TASK_TYPE_ENUM[3]:      #'sl_update'
+        try:
+            dbInstance = DatabaseManager.GetInstance()
+            if dbInstance.DeleteToDoTask(task) > 0:
+                kiteInstance = KiteOrderManager.GetInstance()
+                kiteInstance.ModifyBOSlOrder(task[8], task[5])
+                SetSlUpdateOrder_DOWN(task)
+        except Exception as e:
+            print e
+
+def SetTpUpdateNSlUpdateOrder_DOWN(task, childOrder):
+    tpFound = False
+    slFound = False
+
+    tpOfPosition = 0
+    tpOrderID = 0
+
+    slOfPosition = 0
+    slOrderID = 0
+    for order in childOrder:
+        if order['order_type']=='LIMIT':
+            tpFound = True
+            tpOrderID = order['order_id']
+            tpOfPosition = order['price']        
+        elif order['order_type'] == 'SL':
+            slFound = True
+            slOrderID = order['order_id']
+    
+    dbInstance = DatabaseManager.GetInstance()
+
+    # This level is already 1 down of current tp, so we need to get next level type then set tpupdate n slupdate task
+    levelType = task[2]
+    tmpNxtLevel = dbInstance.GetNextLevel(task[0], levelType)
+    if tmpNxtLevel.__len__()==0:
+        return
+    levelType = tmpNxtLevel[0][0]
+
+    if tpFound:
+        levelPrice = tpOfPosition*(1+0.0005)
+        nxtLevel = dbInstance.GetNextLevel(task[0], levelType)
+        if nxtLevel.__len__() >0:
+            nextTP = nxtLevel[0][1]
+            nextLevelType = nxtLevel[0][0]
+            dbInstance.CreateNewTask(task[0], task[1], nextLevelType, levelPrice, nextTP, 0.0, TASK_TYPE_ENUM[2], LEVEL_CROSS_TYPE_ENUM[0], tpOrderID)
+
+    if slFound:
+        levelPrice = tpOfPosition
+        # Only first time we need prev level, for other time, we need next level
+        prevLevel = dbInstance.GetPrevLevel(task[0], levelType)
+        if prevLevel.__len__() >0:
+            nextSL = prevLevel[0][1]
+            nxtLevel = dbInstance.GetNextLevel(task[0], levelType)
+            if nxtLevel.__len__() >0:
+                nextLevelType = nxtLevel[0][0]
+                dbInstance.CreateNewTask(task[0], task[1], nextLevelType, levelPrice, 0.0, nextSL, TASK_TYPE_ENUM[3], LEVEL_CROSS_TYPE_ENUM[0], slOrderID)
+                         
+def SetTpUpdateOrder_DOWN(task):
+    levelType = task[2]
+    levelPrice = task[4]*(1+0.0005)
+
+    dbInstance = DatabaseManager.GetInstance()
+    nxtLevel = dbInstance.GetNextLevel(task[0], levelType)
+    if nxtLevel.__len__() >0:
+        nextTP = nxtLevel[0][1]
+        nextLevelType = nxtLevel[0][0]
+        dbInstance.CreateNewTask(task[0], task[1], nextLevelType, levelPrice, nextTP, 0.0, TASK_TYPE_ENUM[2], LEVEL_CROSS_TYPE_ENUM[0], task[8])
+
+def SetSlUpdateOrder_DOWN(task):
+    levelType = task[2]
+
+    dbInstance = DatabaseManager.GetInstance()
+    prevLevel = dbInstance.GetPrevLevel(task[0], levelType)
+    if prevLevel.__len__() >0:
+        nextSL = prevLevel[0][1]
+        nxtLevel = dbInstance.GetNextLevel(task[0], levelType)
+        if nxtLevel.__len__() >0:
+            nextLevelType = nxtLevel[0][0]
+            nextLevelPrice = nxtLevel[0][1]
+            dbInstance.CreateNewTask(task[0], task[1], nextLevelType, nextLevelPrice, 0.0, nextSL, TASK_TYPE_ENUM[3], LEVEL_CROSS_TYPE_ENUM[0], task[8])
+
 
 def BuyStock(symbol, lastPrice, tp, sl, quantity, istradable):
     try:
@@ -180,3 +381,4 @@ def GetChildOrder(orderNo):
         print e
         return False 
     return []
+

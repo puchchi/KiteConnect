@@ -36,7 +36,7 @@ class DatabaseManager():
     def GetToDoTaskList(self, instrumentToken):
         try:
             SQL = ''' SELECT * from %s where instrumentToken=%s''' %(TODO_TABLENAME, instrumentToken)
-            
+
             self.cursor.execute(SQL)
             return self.cursor.fetchall()
         except Exception as e:
@@ -132,14 +132,14 @@ class DatabaseManager():
     def DeleteToDoTask(self, task):
         # todo table index [0:InstrumentToken, 1:symbol, 2:TPLevelType, 3:LevelPrice, 4:TP, 5:SL, 6:TaskType, 7:LevelCrossType, 8:OrderNo(Null)
         try:
-            SQL = """delete from %s where instrumenttoken=%s and tasktype='%s'""" %(TODO_TABLENAME, task[0], task[6])
+            SQL = """delete from %s where instrumenttoken=%s and tasktype='%s' and levelcrosstype='%s'""" %(TODO_TABLENAME, task[0], task[6], task[7])
             noRowAffected = self.cursor.execute(SQL)
             self.db.commit()
             return noRowAffected
         except Exception as e:
             self.db.rollback()
             print e
-            print "Error in connecting Mysql db in DatabaseManager::SetupInitialTask"
+            print "Error in connecting Mysql db in DatabaseManager::DeleteToDoTask"
 
         return 0
 
@@ -148,22 +148,46 @@ class DatabaseManager():
         if levelType < 0:
             nextLevelType = levelType - 1
         try:
-            SQL = """SELECT levelType, Price from %s where intrumenttoken=%s levelType=%s""" %(LEVELS_TABLENAME, instrumentToken, levelType)
+            SQL = """SELECT levelType, LevelPrice from %s where InstrumentToken=%s and levelType=%s """ %(LEVELS_TABLENAME, instrumentToken, nextLevelType)
             self.cursor.execute(SQL)
             return self.cursor.fetchall()
         except Exception as e:
             print e
-            print "Error in connecting Mysql db in DatabaseManager::SetupInitialTask"
+            print "Error in connecting Mysql db in DatabaseManager::GetNextLevel"
+        return []
+
+    def GetCurrentLevel(self, instrumentToken, levelType):
+
+        try:
+            SQL = """SELECT levelType, LevelPrice from %s where InstrumentToken=%s and levelType=%s""" %(LEVELS_TABLENAME, instrumentToken, levelType)
+            self.cursor.execute(SQL)
+            return self.cursor.fetchall()
+        except Exception as e:
+            print e
+            print "Error in connecting Mysql db in DatabaseManager::GetCurrentLevel"
+        return []
+
+    def GetPrevLevel(self, instrumentToken, levelType):
+        prevLevelType = levelType - 1
+        if levelType < 0:
+            prevLevelType = levelType + 1
+        try:
+            SQL = """SELECT levelType, LevelPrice from %s where InstrumentToken=%s and levelType=%s""" %(LEVELS_TABLENAME, instrumentToken, prevLevelType)
+            self.cursor.execute(SQL)
+            return self.cursor.fetchall()
+        except Exception as e:
+            print e
+            print "Error in connecting Mysql db in DatabaseManager::GetPrevLevel"
         return []
 
     def CreateNewTask(self, instrumentToken, symbol, TPLevelType, levelPrice, tp, sl, taskType, levelCrossType, orderID):
         try:
             SQL = """ INSERT INTO %s (InstrumentToken, Symbol, TPLevelType, LevelPrice, TargetPrice, StopLoss, TaskType, 
-            LevelCrossType, OrderID) VALUES (%s, '%s', %s, %s, %s, %s, '%s', '%s')
+            LevelCrossType, OrderID) VALUES (%s, '%s', %s, %s, %s, %s, '%s', '%s', %s)
             """ %(TODO_TABLENAME, instrumentToken, symbol, TPLevelType, levelPrice, tp, sl, taskType, levelCrossType, orderID)
             self.cursor.execute(SQL)
             self.db.commit()
         except Exception as e:
             self.db.rollback()
             print e
-            print "Error in connecting Mysql db in DatabaseManager::SetupInitialTask"
+            print "Error in connecting Mysql db in DatabaseManager::CreateNewTask"

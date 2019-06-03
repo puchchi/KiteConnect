@@ -7,6 +7,7 @@ from InitToken import TokenManager
 from multiprocessing import Process, Queue
 #from TickAnalyser import Analyse
 from IndexTickAnalyser import Analyse
+import CleanNCreateDBTables
 
 
 #kite = KiteConnect(api_key=API_KEY)
@@ -97,4 +98,11 @@ class kCommand:
         
     def get_name(self):
         return "Start sticker command"
+
+
+if __name__=='__main__':
+    print "hi"
+    dbCmd = CleanNCreateDBTables.kCommand()
+    #dbCmd.do()
+    StartTicker()
 

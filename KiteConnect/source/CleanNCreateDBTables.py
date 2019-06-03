@@ -49,7 +49,7 @@ class kCommand:
         try:
             SQL = """ CREATE TABLE %s (InstrumentToken INT NOT NULL, Symbol VARCHAR(20), TPLevelType INT NOT NULL, 
                     LevelPrice FLOAT NOT NULL, TargetPrice FLOAT NOT NULL, StopLoss FLOAT NOT NULL, TaskType VARCHAR(20),
-                   LevelCrossType VARCHAR(20), OrderID INT, PRIMARY KEY (InstrumentToken, TaskType)); """ % (todoTableName)
+                   LevelCrossType VARCHAR(20), OrderID VARCHAR(30), PRIMARY KEY (InstrumentToken, TaskType, LevelCrossType)); """ % (todoTableName)
             self.cursor.execute(SQL)
             print "Complete!!! Todo table"
         except Exception as e:
