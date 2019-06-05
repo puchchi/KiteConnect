@@ -2,6 +2,7 @@ import MySQLdb
 from InitToken import TokenManager
 from AnnualisedVolatility import AnnualisedVolatility
 from Utility import *
+import logging
 
 class DatabaseManager():
     __instance = None
@@ -25,13 +26,15 @@ class DatabaseManager():
         
         
     def InitialiseDatabaseMgr(self):
+        logging.info("Database manager starting...")
         try:
             self.db = MySQLdb.connect(DATABASE_HOST, DATABASE_USERNAME,
 				            DATABASE_PASSWORD, DATABASE_NAME, charset="utf8", use_unicode=True)
             self.cursor = self.db.cursor()
         except Exception as e:
-            print e
-            print "Error in connecting Mysql db in DatabaseManager::InitialiseDatabaseMgr"
+            self.DumpExceptionInfo(e, "InitialiseDatabaseMgr")
+
+        logging.info("Database manager complete...")
 
     def GetToDoTaskList(self, instrumentToken):
         try:
@@ -40,8 +43,7 @@ class DatabaseManager():
             self.cursor.execute(SQL)
             return self.cursor.fetchall()
         except Exception as e:
-            print e
-            print "Error in connecting Mysql db in DatabaseManager::InitialiseDatabaseMgr"
+            self.DumpExceptionInfo(e, "GetToDoTaskList")
             return []
 
     def CreateOneSDLevelsAndSetupInitialTask(self, instrumentToken, price):
@@ -67,9 +69,8 @@ class DatabaseManager():
             self.db.commit()
         except Exception as e:
             self.db.rollback()
-            print e
-            print "Error in connecting Mysql db in DatabaseManager::CreateOneSDLevelsAndSetupInitialTask"
-
+            self.DumpExceptionInfo(e, "CreateOneSDLevelsAndSetupInitialTask")
+            
         #Inserting positive levels
         for i in range(fibUpperLevels.__len__()):
             try:
@@ -79,8 +80,7 @@ class DatabaseManager():
                 self.db.commit()
             except Exception as e:
                 self.db.rollback()
-                print e
-                print "Error in connecting Mysql db in DatabaseManager::CreateOneSDLevelsAndSetupInitialTask"
+                self.DumpExceptionInfo(e, "CreateOneSDLevelsAndSetupInitialTask")
 
         #Inserting negative levels
         for i in range(fibLowerLevels.__len__()):
@@ -91,8 +91,7 @@ class DatabaseManager():
                 self.db.commit()
             except Exception as e:
                 self.db.rollback()
-                print e
-                print "Error in connecting Mysql db in DatabaseManager::CreateOneSDLevelsAndSetupInitialTask"
+                self.DumpExceptionInfo(e, "CreateOneSDLevelsAndSetupInitialTask")
 
         print "Complete!!!Levels table population for symbol: " + tradingSymbol 
 
@@ -112,8 +111,7 @@ class DatabaseManager():
             self.db.commit()
         except Exception as e:
             self.db.rollback()
-            print e
-            print "Error in connecting Mysql db in DatabaseManager::SetupInitialTask"
+            self.DumpExceptionInfo(e, "SetupInitialTask")
 
         # setting sell order
         try:
@@ -124,22 +122,21 @@ class DatabaseManager():
             self.db.commit()
         except Exception as e:
             self.db.rollback()
-            print e
-            print "Error in connecting Mysql db in DatabaseManager::SetupInitialTask"
+            self.DumpExceptionInfo(e, "SetupInitialTask")
 
         print "Complete!!!Todo table population(buy n sell) for symbol: " + tradingSymbol 
 
     def DeleteToDoTask(self, task):
         # todo table index [0:InstrumentToken, 1:symbol, 2:TPLevelType, 3:LevelPrice, 4:TP, 5:SL, 6:TaskType, 7:LevelCrossType, 8:OrderNo(Null)
         try:
+            logging.info("Task deletion: "+ str(task))
             SQL = """delete from %s where instrumenttoken=%s and tasktype='%s' and levelcrosstype='%s'""" %(TODO_TABLENAME, task[0], task[6], task[7])
             noRowAffected = self.cursor.execute(SQL)
             self.db.commit()
             return noRowAffected
         except Exception as e:
             self.db.rollback()
-            print e
-            print "Error in connecting Mysql db in DatabaseManager::DeleteToDoTask"
+            self.DumpExceptionInfo(e, "DeleteToDoTask")
 
         return 0
 
@@ -152,8 +149,7 @@ class DatabaseManager():
             self.cursor.execute(SQL)
             return self.cursor.fetchall()
         except Exception as e:
-            print e
-            print "Error in connecting Mysql db in DatabaseManager::GetNextLevel"
+            self.DumpExceptionInfo(e, "GetNextLevel")
         return []
 
     def GetCurrentLevel(self, instrumentToken, levelType):
@@ -163,8 +159,7 @@ class DatabaseManager():
             self.cursor.execute(SQL)
             return self.cursor.fetchall()
         except Exception as e:
-            print e
-            print "Error in connecting Mysql db in DatabaseManager::GetCurrentLevel"
+            self.DumpExceptionInfo(e, "GetCurrentLevel")
         return []
 
     def GetPrevLevel(self, instrumentToken, levelType):
@@ -176,8 +171,7 @@ class DatabaseManager():
             self.cursor.execute(SQL)
             return self.cursor.fetchall()
         except Exception as e:
-            print e
-            print "Error in connecting Mysql db in DatabaseManager::GetPrevLevel"
+            self.DumpExceptionInfo(e, "GetPrevLevel")
         return []
 
     def CreateNewTask(self, instrumentToken, symbol, TPLevelType, levelPrice, tp, sl, taskType, levelCrossType, orderID):
@@ -189,5 +183,9 @@ class DatabaseManager():
             self.db.commit()
         except Exception as e:
             self.db.rollback()
-            print e
-            print "Error in connecting Mysql db in DatabaseManager::CreateNewTask"
+            self.DumpExceptionInfo(e, "CreateNewTask")
+
+    def DumpExceptionInfo(self, e, funcName):
+        logging.error("Error in DatabaseManager::" + funcName, exc_info=True)
+        print e
+        print "Error in DatabaseManager::" + funcName

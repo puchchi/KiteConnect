@@ -15,8 +15,7 @@ class kCommand:
             # Cursor will used in executing SQL query
             self.cursor = self.db.cursor()
         except Exception as e:
-            print e
-            print "Error in connecting Mysql db in CleanNCreateDBTables.py"
+            self.DumpExceptionInfo(e, "__init__")
 
 
     def do(self):
@@ -26,8 +25,7 @@ class kCommand:
             dropTableSQL = """ DROP TABLE %s;""" %(levelTableName)
             self.cursor.execute(dropTableSQL)
         except Exception as e:
-            print "Error in dropping table Call function in CleanNCreateDBTables.py."
-            print e
+            self.DumpExceptionInfo(e, "do")
 
         try:
             SQL = """ CREATE TABLE %s (InstrumentToken INT NOT NULL, Symbol VARCHAR(20), LevelType INT NOT NULL, 
@@ -35,16 +33,14 @@ class kCommand:
             self.cursor.execute(SQL)
             print "Complete!!! Levels table"
         except Exception as e:
-            print "Error in creating table Call function in CleanNCreateDBTables.py."
-            print e
+            self.DumpExceptionInfo(e, "do")
 
         todoTableName = TODO_TABLENAME
         try:
             dropTableSQL = """ DROP TABLE %s;""" %(todoTableName)
             self.cursor.execute(dropTableSQL)
         except Exception as e:
-            print "Error in dropping table Call function in CleanNCreateDBTables.py."
-            print e
+            self.DumpExceptionInfo(e, "do")
 
         try:
             SQL = """ CREATE TABLE %s (InstrumentToken INT NOT NULL, Symbol VARCHAR(20), TPLevelType INT NOT NULL, 
@@ -53,8 +49,12 @@ class kCommand:
             self.cursor.execute(SQL)
             print "Complete!!! Todo table"
         except Exception as e:
-            print "Error in creating table Call function in CleanNCreateDBTables.py."
-            print e
+            self.DumpExceptionInfo(e, "do")
 
     def get_name(self):
         return "Cleaning & creating DB table Command"
+
+    def DumpExceptionInfo(self, e, funcName):
+        logging.error("Error in CleanNCreateDBTables::" + funcName, exc_info=True)
+        print e
+        print "Error in CleanNCreateDBTables::" + funcName

@@ -45,8 +45,7 @@ def Trade(ws, ticks):
                         PlacePriceDownOrder(list(task), lastPrice)
 
         except Exception as e:
-            print "Exception in IndexTickAnalyser::Trade()"
-            print e
+            DumpExceptionInfo(e, "Trade")
 
 def PlacePriceUpOrder(task, lastPrice):
     if task[6] == TASK_TYPE_ENUM[0]:        #'buy'
@@ -63,21 +62,27 @@ def PlacePriceUpOrder(task, lastPrice):
                     nextLevel = dbInstance.GetNextLevel(task[0], levelType)
                     if nextLevel.__len__() == 0:
                         break
+                    if lastPrice < nextLevel[0][1]:
+                        break
                     prevLevel = dbInstance.GetPrevLevel(task[0], levelType)
                     if prevLevel.__len__() == 0:
                         break
                     if lastPrice > nextLevel[0][1]:
                         levelType = nextLevel[0][0]
-                    else:
                         tp = nextLevel[0][1]
                         sl = prevLevel[0][1]
-                        break
+
                 task[2] = levelType
                 task[4] = tp
                 task[5] = sl
                 # Place order
                 buyOrderNo = BuyStock(task[1], lastPrice, task[4], task[5], INDEX_FUTURE_DATA[task[0]]['quantity'], INDEX_FUTURE_DATA[task[0]]['tradable'])
-                
+                if buyOrderNo == '':
+                    print 'No buy order placed!!!Trying to sell again'
+                    buyOrderNo = BuyStock(task[1], lastPrice, task[4], task[5], INDEX_FUTURE_DATA[task[0]]['quantity'], INDEX_FUTURE_DATA[task[0]]['tradable'])
+                if buyOrderNo == '':
+                    return
+
                 # Now check status of this order and on completion, put 2 todo order in db
                 while GetOrderStatus(buyOrderNo) == False:
                     time.sleep(5)
@@ -194,20 +199,27 @@ def PlacePriceDownOrder(task, lastPrice):
                     nextLevel = dbInstance.GetNextLevel(task[0], levelType)
                     if nextLevel.__len__() == 0:
                         break
+                    if lastPrice > nextLevel[0][1]:
+                        break
                     prevLevel = dbInstance.GetPrevLevel(task[0], levelType)
                     if prevLevel.__len__() == 0:
                         break
                     if lastPrice < nextLevel[0][1]:
                         levelType = nextLevel[0][0]
-                    else:
                         tp = nextLevel[0][1]
                         sl = prevLevel[0][1]
-                        break
+
                 task[2] = levelType
                 task[4] = tp
                 task[5] = sl
                 # Place order
                 sellOrderNo = SellStock(task[1], lastPrice, task[4], task[5], INDEX_FUTURE_DATA[task[0]]['quantity'], INDEX_FUTURE_DATA[task[0]]['tradable'])
+                if sellOrderNo == '':
+                    print 'No sell order placed!!!Trying to sell again'
+                    sellOrderNo = SellStock(task[1], lastPrice, task[4], task[5], INDEX_FUTURE_DATA[task[0]]['quantity'], INDEX_FUTURE_DATA[task[0]]['tradable'])
+                if sellOrderNo == '':
+                    return
+
                 # Now check status of this order and on completion, put 2 todo order in db
                 while GetOrderStatus(sellOrderNo) == False:
                     time.sleep(5)
@@ -236,7 +248,7 @@ def PlacePriceDownOrder(task, lastPrice):
                 kiteInstance.ModifyBOSlOrder(task[8], task[5])
                 SetSlUpdateOrder_DOWN(task)
         except Exception as e:
-            print e
+            DumpExceptionInfo(e, "PlacePriceDownOrder")
 
 def SetTpUpdateNSlUpdateOrder_DOWN(task, childOrder):
     tpFound = False
@@ -315,7 +327,7 @@ def BuyStock(symbol, lastPrice, tp, sl, quantity, istradable):
         trailingSL = stopLossPoint
 
         # making market order
-        tradePrice = (lastPrice + (lastPrice * 0.001)).__format__('.2f')
+        tradePrice = (lastPrice + (lastPrice * 0.001)).__format__('.1f')
 
         orderNo = 0
         if istradable:
@@ -328,7 +340,7 @@ def BuyStock(symbol, lastPrice, tp, sl, quantity, istradable):
         return orderNo
 
     except Exception as e:
-        None
+        DumpExceptionInfo(e, "BuyStock")
 
 def SellStock(symbol, lastPrice, tp, sl, quantity, istradable):
     try:
@@ -338,7 +350,7 @@ def SellStock(symbol, lastPrice, tp, sl, quantity, istradable):
         trailingSL = stopLossPoint
 
         # making market order
-        tradePrice = (lastPrice - (lastPrice * 0.001)).__format__('.2f')
+        tradePrice = (lastPrice - (lastPrice * 0.001)).__format__('.1f')
 
         orderNo = 0
         if istradable:
@@ -350,7 +362,7 @@ def SellStock(symbol, lastPrice, tp, sl, quantity, istradable):
         logging.critical("Sell order triggered of " + symbol + " at " + str(tradePrice) + " with target point " + str(targetPoint) + " and stoploss point " + str(stopLossPoint))
         return orderNo
     except Exception as e:
-        print e
+        DumpExceptionInfo(e, "SellStock")
 
 def GetOrderStatus(orderNo):
     try:
@@ -362,8 +374,7 @@ def GetOrderStatus(orderNo):
         return False
 
     except Exception as e:
-        print "Exception in IndexTickAnalyser::GetOrderStatus()"
-        print e
+        DumpExceptionInfo(e, "GetOrderStatus")
         return False
 
 def GetChildOrder(orderNo):
@@ -376,8 +387,11 @@ def GetChildOrder(orderNo):
                 childOrder.append(order)
         return childOrder
     except Exception as e:
-        print "Exception in IndexTickAnalyser::GetOrderStatus()"
-        print e
+        DumpExceptionInfo(e, "GetChildOrder")
         return False 
     return []
 
+def DumpExceptionInfo(e, funcName):
+    logging.error("Error in IndexTickAnalyser::" + funcName, exc_info=True)
+    print e
+    print "Error in IndexTickAnalyser::" + funcName

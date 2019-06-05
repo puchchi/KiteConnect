@@ -29,9 +29,11 @@ class AnnualisedVolatility():
                     flag = True
                     break
             except Exception as e:
-                print "Exception in AnnualisedVolatility:GetAnnualisedVolatility"
-                print e
-                logging.error("Exception in AnnualisedVolatility:GetAnnualisedVolatility", exc_info=True)
-            
+                self.DumpExceptionInfo(e, "GetAnnualisedVolatility")
 
         return annVolatility
+
+    def DumpExceptionInfo(self, e, funcName):
+        logging.error("Error in AnnualisedVolatility::" + funcName, exc_info=True)
+        print e
+        print "Error in AnnualisedVolatility::" + funcName
