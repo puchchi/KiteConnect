@@ -53,12 +53,12 @@ ORDER_TYPE = 'BO'          #'BO'
 TICKERSTART = '091500'     #91505     # 09:15:05 AM (added 5 second as time padding)
 TRADABLESTOCKSTART = '220400'     #91800     # 09:18:00 AMl
 TRADINGSTART = '092000'     #92000     # 09:20:05 AM
-TRADINGCLOSE = '153000'   #152000    # 03:20:00 PM
+TRADINGCLOSE = '233000'   #152000    # 03:20:00 PM
 
 PROFIT_PERCENTAGE = 1
 STOPLOSS_PERCENTAGE = 1
 
-INDEX_FUTURE_DATA = {14628098:{'underlyingsymbol':'NIFTY', 'tradingsymbol':'NIFTY19JUNFUT', 'expiry':'27JUN2019', 'tradable':True, 'quantity':75},}
+INDEX_FUTURE_DATA = {14628098:{'underlyingsymbol':'NIFTY', 'tradingsymbol':'NIFTY19JUNFUT', 'expiry':'27JUN2019', 'tradable':True, 'quantity':150},}
                      #14627842:{'underlyingsymbol':'BANKNIFTY', 'tradingsymbol':'BANKNIFTY19JUNFUT','expiry':'27JUN2019', 'tradable':False}}
 
 INDEX_FUTURES_FUTURE_DATA = {11870210:{'underlyingsymbol':'NIFTY', 'tradingsymbol':'NIFTY19JULFUT', 'expiry':'25JUL2019', 'tradable':True},

@@ -39,9 +39,9 @@ def Trade(ws, ticks):
             else:
                 # todo table index [0:InstrumentToken, 1:symbol, 2:TPLevelType, 3:LevelPrice, 4:TP, 5:SL, 6:TaskType, 7:LevelCrossType, 8:OrderNo(Null)
                 for task in todoTaskList:
-                    if task[7] == LEVEL_CROSS_TYPE_ENUM[0] and levelCrossType == LEVEL_CROSS_TYPE_ENUM[0] and lastPrice > task[3]:
+                    if task[7] == LEVEL_CROSS_TYPE_ENUM[0] and levelCrossType == LEVEL_CROSS_TYPE_ENUM[0] and lastPrice >= task[3]:
                         PlacePriceUpOrder(list(task), lastPrice)
-                    elif task[7] == LEVEL_CROSS_TYPE_ENUM[1] and levelCrossType == LEVEL_CROSS_TYPE_ENUM[1] and lastPrice < task[3]:
+                    elif task[7] == LEVEL_CROSS_TYPE_ENUM[1] and levelCrossType == LEVEL_CROSS_TYPE_ENUM[1] and lastPrice <= task[3]:
                         PlacePriceDownOrder(list(task), lastPrice)
 
         except Exception as e:
@@ -52,8 +52,8 @@ def PlacePriceUpOrder(task, lastPrice):
         # First of all delete this task from db, if function is able to delete, it means
         # no other thread can process this task even if it has got data extracted from db
         try:
-                dbInstance = DatabaseManager.GetInstance()
-            #if dbInstance.DeleteToDoTask(task) > 0:
+            dbInstance = DatabaseManager.GetInstance()
+            if dbInstance.DeleteToDoTask(task) > 0:
                 levelType = task[2]
                 tp = task[4]
                 sl = task[5]
@@ -84,7 +84,7 @@ def PlacePriceUpOrder(task, lastPrice):
                     return
 
                 # Now check status of this order and on completion, put 2 todo order in db
-                while GetOrderStatus(buyOrderNo) == False:
+                while GetOrderStatus_COMPLETE(buyOrderNo) == False:
                     time.sleep(5)
 
                 # We are here, it means buy order completed
@@ -139,7 +139,7 @@ def SetTpUpdateNSlUpdateOrder_UP(task, childOrder):
     tmpNxtLevel = dbInstance.GetNextLevel(task[0], levelType)
     if tmpNxtLevel.__len__()==0:
         return
-    levelType = tmpNxtLevel[0][0]
+    #levelType = tmpNxtLevel[0][0]
 
     if tpFound:
         levelPrice = tpOfPosition*(1-0.0005)
@@ -150,7 +150,7 @@ def SetTpUpdateNSlUpdateOrder_UP(task, childOrder):
             dbInstance.CreateNewTask(task[0], task[1], nextLevelType, levelPrice, nextTP, 0.0, TASK_TYPE_ENUM[2], LEVEL_CROSS_TYPE_ENUM[0], tpOrderID)
 
     if slFound:
-        levelPrice = tpOfPosition
+        levelPrice = tpOfPosition*(1-0.0003)
         # Only first time we need prev level, for other time, we need next level
         prevLevel = dbInstance.GetPrevLevel(task[0], levelType)
         if prevLevel.__len__() >0:
@@ -161,6 +161,10 @@ def SetTpUpdateNSlUpdateOrder_UP(task, childOrder):
                 dbInstance.CreateNewTask(task[0], task[1], nextLevelType, levelPrice, 0.0, nextSL, TASK_TYPE_ENUM[3], LEVEL_CROSS_TYPE_ENUM[0], slOrderID)
                          
 def SetTpUpdateOrder_UP(task):
+    # Now before setting another order, check whether this order is still open or not
+    if OrderClosed(task[8]):
+        return
+
     levelType = task[2]
     levelPrice = task[4]*(1-0.0005)
 
@@ -172,6 +176,9 @@ def SetTpUpdateOrder_UP(task):
         dbInstance.CreateNewTask(task[0], task[1], nextLevelType, levelPrice, nextTP, 0.0, TASK_TYPE_ENUM[2], LEVEL_CROSS_TYPE_ENUM[0], task[8])
 
 def SetSlUpdateOrder_UP(task):
+    # Now before setting another order, check whether this order is still open or not
+    if OrderClosed(task[8]):
+        return
     levelType = task[2]
     nextSL = task[3]        # current level(old tp) will be new sl
     dbInstance = DatabaseManager.GetInstance()
@@ -180,7 +187,7 @@ def SetSlUpdateOrder_UP(task):
         nxtLevel = dbInstance.GetNextLevel(task[0], levelType)
         if nxtLevel.__len__() >0:
             nextLevelType = nxtLevel[0][0]
-            nextLevelPrice = currentLevel[0][1]
+            nextLevelPrice = currentLevel[0][1]*(1-0.0003)
             dbInstance.CreateNewTask(task[0], task[1], nextLevelType, nextLevelPrice, 0.0, nextSL, TASK_TYPE_ENUM[3], LEVEL_CROSS_TYPE_ENUM[0], task[8])
 
 
@@ -221,7 +228,7 @@ def PlacePriceDownOrder(task, lastPrice):
                     return
 
                 # Now check status of this order and on completion, put 2 todo order in db
-                while GetOrderStatus(sellOrderNo) == False:
+                while GetOrderStatus_COMPLETE(sellOrderNo) == False:
                     time.sleep(5)
 
                 # We are here, it means buy order completed
@@ -275,7 +282,7 @@ def SetTpUpdateNSlUpdateOrder_DOWN(task, childOrder):
     tmpNxtLevel = dbInstance.GetNextLevel(task[0], levelType)
     if tmpNxtLevel.__len__()==0:
         return
-    levelType = tmpNxtLevel[0][0]
+    #levelType = tmpNxtLevel[0][0]
 
     if tpFound:
         levelPrice = tpOfPosition*(1+0.0005)
@@ -286,7 +293,7 @@ def SetTpUpdateNSlUpdateOrder_DOWN(task, childOrder):
             dbInstance.CreateNewTask(task[0], task[1], nextLevelType, levelPrice, nextTP, 0.0, TASK_TYPE_ENUM[2], LEVEL_CROSS_TYPE_ENUM[1], tpOrderID)
 
     if slFound:
-        levelPrice = tpOfPosition
+        levelPrice = tpOfPosition(1+0.0003)
         # Only first time we need prev level, for other time, we need next level
         prevLevel = dbInstance.GetPrevLevel(task[0], levelType)
         if prevLevel.__len__() >0:
@@ -297,6 +304,9 @@ def SetTpUpdateNSlUpdateOrder_DOWN(task, childOrder):
                 dbInstance.CreateNewTask(task[0], task[1], nextLevelType, levelPrice, 0.0, nextSL, TASK_TYPE_ENUM[3], LEVEL_CROSS_TYPE_ENUM[1], slOrderID)
                          
 def SetTpUpdateOrder_DOWN(task):
+    # Now before setting another order, check whether this order is still open or not
+    if OrderClosed(task[8]):
+        return
     levelType = task[2]
     levelPrice = task[4]*(1+0.0005)
 
@@ -308,6 +318,9 @@ def SetTpUpdateOrder_DOWN(task):
         dbInstance.CreateNewTask(task[0], task[1], nextLevelType, levelPrice, nextTP, 0.0, TASK_TYPE_ENUM[2], LEVEL_CROSS_TYPE_ENUM[1], task[8])
 
 def SetSlUpdateOrder_DOWN(task):
+    # Now before setting another order, check whether this order is still open or not
+    if OrderClosed(task[8]):
+        return
     levelType = task[2]
     nextSL = task[3]        # current level(old tp) will be new sl
     dbInstance = DatabaseManager.GetInstance()
@@ -316,7 +329,7 @@ def SetSlUpdateOrder_DOWN(task):
         nxtLevel = dbInstance.GetNextLevel(task[0], levelType)
         if nxtLevel.__len__() >0:
             nextLevelType = nxtLevel[0][0]
-            nextLevelPrice = currentLevel[0][1]
+            nextLevelPrice = currentLevel[0][1]*(1+0.0003)
             dbInstance.CreateNewTask(task[0], task[1], nextLevelType, nextLevelPrice, 0.0, nextSL, TASK_TYPE_ENUM[3], LEVEL_CROSS_TYPE_ENUM[1], task[8])
 
 def BuyStock(symbol, lastPrice, tp, sl, quantity, istradable):
@@ -364,7 +377,7 @@ def SellStock(symbol, lastPrice, tp, sl, quantity, istradable):
     except Exception as e:
         DumpExceptionInfo(e, "SellStock")
 
-def GetOrderStatus(orderNo):
+def GetOrderStatus_COMPLETE(orderNo):
     try:
         instance = KiteOrderManager.GetInstance()
         orderHistory = instance.GetOrderHistory(orderNo)
@@ -374,7 +387,7 @@ def GetOrderStatus(orderNo):
         return False
 
     except Exception as e:
-        DumpExceptionInfo(e, "GetOrderStatus")
+        DumpExceptionInfo(e, "GetOrderStatus_COMPLETE")
         return False
 
 def GetChildOrder(orderNo):
@@ -395,3 +408,16 @@ def DumpExceptionInfo(e, funcName):
     logging.error("Error in IndexTickAnalyser::" + funcName, exc_info=True)
     print e
     print "Error in IndexTickAnalyser::" + funcName
+
+def OrderClosed(orderNo):
+    try:
+        instance = KiteOrderManager.GetInstance()
+        orderHistory = instance.GetOrderHistory(orderNo)
+        len = orderHistory.__len__()
+        if orderHistory[len-1]['status'] == 'COMPLETE' or orderHistory[len-1]['status'] == 'CANCELLED':
+            return True
+        return False
+
+    except Exception as e:
+        DumpExceptionInfo(e, "OrderClosed")
+        return False
