@@ -12,13 +12,7 @@ import thread, os, time
 
 def Analyse(ws, ticks):
     print "Tick recieved for " + str(ticks.__len__())
-    
-    now = int(datetime.now().strftime("%H%M%S"))
-
-    if now >= int(TICKERSTART) and now < int(TRADINGCLOSE):
-        Trade(ws, ticks)
-    else:
-        pass
+    Trade(ws, ticks)
 
 def Trade(ws, ticks):
     for tick in ticks:

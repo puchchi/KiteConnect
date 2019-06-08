@@ -1,5 +1,6 @@
 from kiteconnect import KiteTicker
 from kiteconnect import KiteConnect
+import os
 
 import hashlib, time, requests, thread, logging
 from Utility import *
@@ -8,6 +9,7 @@ from multiprocessing import Process, Queue
 #from TickAnalyser import Analyse
 from IndexTickAnalyser import Analyse
 import CleanNCreateDBTables
+from datetime import datetime
 
 
 #kite = KiteConnect(api_key=API_KEY)
@@ -61,7 +63,6 @@ def on_close(ws, code, reason):
     #exit()
 
 def StartTicker():
-
     tokenManager = TokenManager.GetInstance()
     kws = KiteTicker(tokenManager.GetApiKey(), tokenManager.GetAccessToken())
     # Assign the callbacks.
@@ -87,14 +88,42 @@ class kCommand:
         queue = Queue()
         process = Process(target=self.run_job, args=(queue, self.args))
         process.start()
-        result = queue.get()
-        process.join()
+        #result = queue.get()
+        #process.join()
 
-        if result is not None:
-            raise result
+        #if result is not None:
+        #    raise result
+
+        return process
 
     def do(self):
-        thread.start_new_thread(self.run_process, ())
+        process = self.run_process()
+        while(1):
+            now = int(datetime.now().strftime("%H%M%S"))
+
+            if now >= int(TICKERSTART) and now < int(TRADINGCLOSE):
+                try:
+                    if process.is_alive() == False:
+                        print "Ticker process has stopped, Running it again..."
+                        logging.critical("Ticker process has stopped, Running it again...")
+                        process = self.run_process()
+                except Exception as e:
+                    print e
+                    print "Exception while restaring ticker process"
+                    logging.critical("Exception while restaring ticker process", exc_info=True)
+            elif process.is_alive() == True:
+                try:
+                    print "Force stopping ticker process at " + str(datetime.now().strftime("%H:%M:%S")) + "..."
+                    logging.critical("Force stopping ticker process...")
+                    process.terminate()
+                    return
+                except Exception as e:
+                    print e
+                    print "Exception while force stopping ticker process"
+                    logging.critical("Exception while force stopping ticker process", exc_info=True)
+                    return
+
+            time.sleep(5)
         
     def get_name(self):
         return "Start sticker command"
