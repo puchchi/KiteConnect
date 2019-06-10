@@ -26,7 +26,10 @@ def Trade(ws, ticks):
 
             # Get tasks list from DB
             dbInstance = DatabaseManager.GetInstance()
-            todoTaskList = dbInstance.GetToDoTaskList(instrumentToken)
+            [isSuccessfull, todoTaskList] = dbInstance.GetToDoTaskList(instrumentToken)
+
+            if isSuccessfull == False:
+                return
 
             if todoTaskList.__len__() == 0:
                 dbInstance.CreateOneSDLevelsAndSetupInitialTask(instrumentToken, openPrice)
