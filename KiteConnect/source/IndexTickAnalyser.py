@@ -92,6 +92,7 @@ def PlacePriceUpOrder(task, lastPrice):
             print e
 
     elif task[6] == TASK_TYPE_ENUM[2]:      #'tp_update'
+        return
         try:
             dbInstance = DatabaseManager.GetInstance()
             if dbInstance.DeleteToDoTask(task) > 0:
@@ -102,6 +103,7 @@ def PlacePriceUpOrder(task, lastPrice):
             print e
 
     elif task[6] == TASK_TYPE_ENUM[3]:      #'sl_update'
+        return
         try:
             dbInstance = DatabaseManager.GetInstance()
             if dbInstance.DeleteToDoTask(task) > 0:
@@ -235,6 +237,7 @@ def PlacePriceDownOrder(task, lastPrice):
             print e
 
     elif task[6] == TASK_TYPE_ENUM[2]:      #'tp_update'
+        return
         try:
             dbInstance = DatabaseManager.GetInstance()
             if dbInstance.DeleteToDoTask(task) > 0:
@@ -245,6 +248,7 @@ def PlacePriceDownOrder(task, lastPrice):
             print e
 
     elif task[6] == TASK_TYPE_ENUM[3]:      #'sl_update'
+        return
         try:
             dbInstance = DatabaseManager.GetInstance()
             if dbInstance.DeleteToDoTask(task) > 0:

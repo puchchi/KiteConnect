@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>185af9f3-760b-4892-817e-d039607b5ee7</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>source\Main.py</StartupFile>
+    <StartupFile>source\TIcker.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
