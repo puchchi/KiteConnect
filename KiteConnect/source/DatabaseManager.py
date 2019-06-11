@@ -42,16 +42,15 @@ class DatabaseManager():
             cursor = self.db.cursor()
             cursor.execute(SQL)
             data = cursor.fetchall()
-            cursor.close()
+            #cursor.close()
             return [True, data]
         except Exception as e:
             self.DumpExceptionInfo(e, "GetToDoTaskList")
-        finally:
-            cursor.close()
-        return [False, []]
+        #finally:
+            #cursor.close()
+            return [False, []]
 
     def CreateOneSDLevelsAndSetupInitialTask(self, instrumentToken, price):
-
         annualisedVolatility = AnnualisedVolatility(INDEX_FUTURE_DATA[instrumentToken]['underlyingsymbol'], INDEX_FUTURE_DATA[instrumentToken]['expiry'])
         annualVolatility = annualisedVolatility.GetAnnualisedVolatility()
         print "Annualised volatility: " + str(annualVolatility)
@@ -99,7 +98,7 @@ class DatabaseManager():
                 self.DumpExceptionInfo(e, "CreateOneSDLevelsAndSetupInitialTask")
 
         print "Complete!!!Levels table population for symbol: " + tradingSymbol 
-        cursor.close()
+        #cursor.close()
 
         # Now setting up first buy & sell order
         self.SetupInitialTask(instrumentToken, fibLowerLevels, fibUpperLevels, price)
@@ -107,30 +106,26 @@ class DatabaseManager():
     def SetupInitialTask(self, instrumentToken, fibLowerLevels, fibUpperLevels, price):
         tradingSymbol = INDEX_FUTURE_DATA[instrumentToken]['tradingsymbol']
         print "Start!!!Todo table population(buy n sell) for symbol: " + tradingSymbol 
-        cursor = self.db.cursor()
-        # setting buy order
+        logging.info("Start!!!Todo table population(buy n sell) for symbol: " + tradingSymbol)
+
+        buyLevelType = 2
+        buyValues = "(%s, '%s', %s, %s, %s, %s, '%s', '%s')" %(instrumentToken, tradingSymbol, buyLevelType, fibUpperLevels[buyLevelType-2]*(1+PRICE_PADDING), fibUpperLevels[buyLevelType-1], price, TASK_TYPE_ENUM[0], LEVEL_CROSS_TYPE_ENUM[0])
+
+        sellLevelType = -2
+        sellValues = "(%s, '%s', %s, %s, %s, %s, '%s', '%s')"  %(instrumentToken, tradingSymbol, sellLevelType, fibLowerLevels[abs(sellLevelType)-2]*(1-PRICE_PADDING), fibLowerLevels[abs(sellLevelType)-1], price, TASK_TYPE_ENUM[1], LEVEL_CROSS_TYPE_ENUM[1])
+        # setting buy & sell order
         try:
+            cursor = self.db.cursor()
             levelType = 2       # Level type shows level of target price in DB
             SQL = """ INSERT INTO %s (InstrumentToken, Symbol, TPLevelType, LevelPrice, TargetPrice, StopLoss, TaskType, LevelCrossType)
-            VALUES (%s, '%s', %s, %s, %s, %s, '%s', '%s')""" %(TODO_TABLENAME, instrumentToken, tradingSymbol, levelType, fibUpperLevels[levelType-2]*(1+PRICE_PADDING), fibUpperLevels[levelType-1], price, TASK_TYPE_ENUM[0], LEVEL_CROSS_TYPE_ENUM[0])
+            VALUES %s, %s""" %(TODO_TABLENAME, buyValues, sellValues)
             cursor.execute(SQL)
             self.db.commit()
         except Exception as e:
             self.db.rollback()
             self.DumpExceptionInfo(e, "SetupInitialTask")
 
-        # setting sell order
-        try:
-            levelType = -2       # Level type shows level of target price in DB
-            SQL = """ INSERT INTO %s (InstrumentToken, Symbol, TPLevelType, LevelPrice, TargetPrice, StopLoss, TaskType, LevelCrossType)
-            VALUES (%s, '%s', %s, %s, %s, %s, '%s', '%s')""" %(TODO_TABLENAME, instrumentToken, tradingSymbol, levelType, fibLowerLevels[abs(levelType)-2]*(1-PRICE_PADDING), fibLowerLevels[abs(levelType)-1], price, TASK_TYPE_ENUM[1], LEVEL_CROSS_TYPE_ENUM[1])
-            cursor.execute(SQL)
-            self.db.commit()
-        except Exception as e:
-            self.db.rollback()
-            self.DumpExceptionInfo(e, "SetupInitialTask")
-
-        cursor.close()
+        #cursor.close()
         print "Complete!!!Todo table population(buy n sell) for symbol: " + tradingSymbol 
 
     def DeleteToDoTask(self, task):
@@ -146,10 +141,10 @@ class DatabaseManager():
         except Exception as e:
             self.db.rollback()
             self.DumpExceptionInfo(e, "DeleteToDoTask")
-        finally:
-            cursor.close()
+        #finally:
+            #cursor.close()
 
-        return 0
+            return 0
 
     def GetNextLevel(self, instrumentToken, levelType):
         nextLevelType = levelType + 1
@@ -164,9 +159,9 @@ class DatabaseManager():
             return data
         except Exception as e:
             self.DumpExceptionInfo(e, "GetNextLevel")
-        finally:
-            cursor.close()
-        return []
+        #finally:
+            #cursor.close()
+            return []
 
     def GetCurrentLevel(self, instrumentToken, levelType):
 
@@ -179,9 +174,9 @@ class DatabaseManager():
             return data
         except Exception as e:
             self.DumpExceptionInfo(e, "GetCurrentLevel")
-        finally:
-            cursor.close()
-        return []
+        #finally:
+            #cursor.close()
+            return []
 
     def GetPrevLevel(self, instrumentToken, levelType):
         prevLevelType = levelType - 1
@@ -196,9 +191,9 @@ class DatabaseManager():
             return data
         except Exception as e:
             self.DumpExceptionInfo(e, "GetPrevLevel")
-        finally:
-            cursor.close()
-        return []
+        #finally:
+            #cursor.close()
+            return []
 
     def CreateNewTask(self, instrumentToken, symbol, TPLevelType, levelPrice, tp, sl, taskType, levelCrossType, orderID):
         try:
@@ -211,8 +206,8 @@ class DatabaseManager():
         except Exception as e:
             self.db.rollback()
             self.DumpExceptionInfo(e, "CreateNewTask")
-        finally:
-            cursor.close()
+        #finally:
+            #cursor.close()
 
     def DumpExceptionInfo(self, e, funcName):
         logging.error("Error in DatabaseManager::" + funcName, exc_info=True)
