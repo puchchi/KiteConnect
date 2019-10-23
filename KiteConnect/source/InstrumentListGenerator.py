@@ -1,6 +1,8 @@
 import pandas as pd
 from Utility import *
 
+from KiteConnect.source.Utility import *
+
 class InstrumentListGenerator():
     
     def __init__(self):
@@ -28,3 +30,8 @@ class InstrumentListGenerator():
 
         except Exception as e:
             print e
+
+
+if __name__=='__main__':
+    instrumentListGen = InstrumentListGenerator()
+    instrumentListGen.CreateNSE500ToZerodhaInstrumentList()

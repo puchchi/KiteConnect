@@ -36,10 +36,12 @@ INSTRUMENTS_DATA_URL = 'https://api.kite.trade/instruments'
 GAP_LOWER_LIMIT = 2
 GAP_UPPER_LIMIT = 4
 
-DATA_LOCATION = path.join(HOME_DIR, "Data")
-ZERODHA_INSTRUMENT_LIST_PATH = path.join(DATA_LOCATION, "instruments")
+DATA_LOCATION = path.join(HOME_DIR, "Data/")
+ZERODHA_INSTRUMENT_LIST_FILENAME = "instruments"
+ZERODHA_INSTRUMENT_LIST_PATH = path.join(DATA_LOCATION, ZERODHA_INSTRUMENT_LIST_FILENAME)
 NSE500_LIST_PATH = path.join(DATA_LOCATION, "ind_nifty500list") 
-NSE500_WITH_ZERODHA_INSTRUMENT_TOKEN = path.join(DATA_LOCATION, "nse500withzerodhatoken")
+NSE500_LIST_FILENAME = "nse500withzerodhatoken"
+NSE500_WITH_ZERODHA_INSTRUMENT_TOKEN = path.join(DATA_LOCATION, NSE500_LIST_FILENAME)
 
 SHORTLISTED_STOCK_LOCATION = path.join(HOME_DIR, "ShortlistedStocks")
 TRADABLE_STOCK_LOCATION = path.join(HOME_DIR, "TradableStocks")
@@ -115,3 +117,4 @@ def GetNSE500ListWithSymbol():
         print e
         logging.critical("Unable to find nse500 list", exc_info=True)
     return nse500ListDF
+

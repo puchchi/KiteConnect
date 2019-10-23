@@ -1,0 +1,4 @@
+#For mysql
+#pip install mysqlclient
+#create user "StockUser"@"localhost" identified by "StockPass";
+#grant all privilidges on *.* to "StockUser"@"localhost";

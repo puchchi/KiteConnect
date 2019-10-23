@@ -216,8 +216,22 @@ class KiteOrderManager():
             self.InitialiseKite()
             self.kite.modify_order(variety='bo', order_id=orderId, trigger_price=triggerPrice)
 
+    def GetHistoricalData(self, instrumentToken, fromDate, toDate, interval, continuous):
+        try:
+            # from date/to date : yyyy-mm-dd HH:MM:SS
+            return self.kite.historical_data(instrumentToken, fromDate, toDate, interval, continuous)
+        except Exception as e:
+            self.DumpExceptionInfo(e, "GetHistoricalData")
 
     def DumpExceptionInfo(self, e, funcName):
         logging.error("Error in KiteOrderManager::" + funcName, exc_info=True)
         print e
         print "Error in KiteOrderManager::" + funcName
+        
+
+
+
+if __name__=='__main__':
+    instance = KiteOrderManager.GetInstance();
+    
+    
