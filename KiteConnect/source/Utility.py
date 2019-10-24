@@ -59,6 +59,7 @@ TRADINGCLOSE = '153000'   #152000    # 03:20:00 PM
 
 PROFIT_PERCENTAGE = 1
 STOPLOSS_PERCENTAGE = 1
+INVALID_PRICE = -1
 
 INDEX_FUTURE_DATA = {14628098:{'underlyingsymbol':'NIFTY', 'tradingsymbol':'NIFTY19JUNFUT', 'expiry':'27JUN2019', 'tradable':True, 'quantity':75},}
                      #14627842:{'underlyingsymbol':'BANKNIFTY', 'tradingsymbol':'BANKNIFTY19JUNFUT','expiry':'27JUN2019', 'tradable':False}}
