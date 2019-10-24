@@ -1,6 +1,9 @@
 from os import path
-from KiteConnect.source.Utility import *
-from KiteConnect.source.backtesting import BackTestData
+from source.Utility import *
+from source.backtesting import BackTestData
+
+#from KiteConnect.source.Utility import *
+#from KiteConnect.source.backtesting import BackTestData
 
 REPORT_DIR = path.dirname(path.dirname(path.abspath(__file__)))
 REPORT_TIME_FORMAT = '%Y-%m-%d %H:%M:%S'
@@ -18,20 +21,21 @@ class OrderManagerStockStruct():
     def GetInitialReport(self):
         tempMsgStr = ''
         if (self.IsBoughtContract()):
-            tempMsgStr += '\tBought ' + self.fStockName + ', Lot size(' + self.fLotSize + ') :' + str(self.fQuantity/self.fLotSize) + 'lots, at price: ' + str(self.fBuyingPrice) +'\n'
+            tempMsgStr += '\tBought ' + self.fStockName + ', Lot size(' + str(self.fLotSize) + ') :' + str(self.fQuantity/self.fLotSize) + 'lots, at price: ' + str(self.fBuyingPrice) +'\n'
             
         elif (self.IsSoldContract()):
-            tempMsgStr += '\tSold ' + self.fStockName + ', Lot size(' + self.fLotSize + ') :' + str(self.fQuantity/self.fLotSize) + 'lots, at price: ' + str(self.fSellingPrice) + '\n'
-            
+            tempMsgStr += '\tSold ' + self.fStockName + ', Lot size(' + str(self.fLotSize) + ') :' + str(self.fQuantity/self.fLotSize) + 'lots, at price: ' + str(self.fSellingPrice) + '\n'
+        return tempMsgStr
+
     def ClosePositionAt(self, date):
         tempMsgStr = ''
         if (self.IsBoughtContract()):
             self.fSellingPrice = BackTestData.GetOpenPriceAtTime(date, self.fTickData)
-            tempMsgStr += '\tSold(closed) ' + self.fStockName + ', Lot size(' + self.fLotSize + ') :' + str(self.fQuantity/self.fLotSize) + 'lots, at price: ' + str(self.fSellingPrice) +'\n'
+            tempMsgStr += '\tSold(closed) ' + self.fStockName + ', Lot size(' + str(self.fLotSize) + ') :' + str(self.fQuantity/self.fLotSize) + 'lots, at price: ' + str(self.fSellingPrice) +'\n'
             
         elif (self.IsSoldContract()):
             self.fBuyingPrice = BackTestData.GetOpenPriceAtTime(date, self.fTickData)
-            tempMsgStr += '\tBought(closed) ' + self.fStockName + ', Lot size(' + self.fLotSize + ') :' + str(self.fQuantity/self.fLotSize) + 'lots, at price: ' + str(self.fBuyingPrice) +'\n'
+            tempMsgStr += '\tBought(closed) ' + self.fStockName + ', Lot size(' + str(self.fLotSize) + ') :' + str(self.fQuantity/self.fLotSize) + 'lots, at price: ' + str(self.fBuyingPrice) +'\n'
             
         return tempMsgStr
     
@@ -42,7 +46,7 @@ class OrderManagerStockStruct():
         return self.fSellingPrice != INVALID_PRICE
 
     def GetProfitOrLoss(self):
-        return self.fBuyingPrice - self.fSellingPrice
+        return self.fSellingPrice - self.fBuyingPrice
     
 
 class OrderManager():
@@ -61,10 +65,10 @@ class OrderManager():
         
     def OpenedNewPosition(self, positionDetail, date):
         with open(self.fReportFileName, 'a') as fd: 
-            messageString = "\n\n***************************************************"
+            messageString = "\n\n***************************************************\n"
             messageString += "Opened a trade at " + date.strftime(REPORT_TIME_FORMAT) + '\n'
             for stock in positionDetail:
-                messageString += stock.GetInitialReport()
+                messageString += str(stock.GetInitialReport())
             fd.write(messageString)
             
             print messageString
@@ -77,7 +81,7 @@ class OrderManager():
             profitOrLoss = stock.GetProfitOrLoss()
             positionalProfitOrLoss += profitOrLoss
             
-        self.fProfitLostDateWise.append[[date, positionalProfitOrLoss]]
+        self.fProfitLostDateWise.append([date, positionalProfitOrLoss])
         self.fTotalProfitOrLoss += positionalProfitOrLoss
         
         messageString += '\n Positional profit/loss: ' + str(positionalProfitOrLoss)
@@ -88,7 +92,7 @@ class OrderManager():
             
     def DumpFullProfitOrLoss(self):
         with open(self.fReportFileName, 'a') as fd: 
-            messageString = "\n\n***************************************************"
+            messageString = "\n\n***************************************************\n"
             messageString += 'Total profit/loss: ' + str(self.fTotalProfitOrLoss)
             fd.write(messageString)
             

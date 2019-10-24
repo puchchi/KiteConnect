@@ -1,0 +1,44 @@
+
+
+***************************************************
+Opened a trade at 2019-10-10 00:00:00
+	Bought NIFTY19OCTFUT, Lot size(75) :1lots, at price: 11276.9
+	Bought NIFTY19OCT11300PE, Lot size(75) :1lots, at price: 179
+	Closing a trade at 2019-10-11 00:00:00
+	Sold(closed) NIFTY19OCTFUT, Lot size(75) :1lots, at price: 11289.65
+	Sold(closed) NIFTY19OCT11300PE, Lot size(75) :1lots, at price: 171.6
+
+ Positional profit/loss: 5.35
+
+***************************************************
+Opened a trade at 2019-10-15 00:00:00
+	Bought NIFTY19OCTFUT, Lot size(75) :1lots, at price: 11365.2
+	Bought NIFTY19OCT11350PE, Lot size(75) :1lots, at price: 167.25
+	Closing a trade at 2019-10-18 00:00:00
+	Sold(closed) NIFTY19OCTFUT, Lot size(75) :1lots, at price: 11569.2
+	Sold(closed) NIFTY19OCT11350PE, Lot size(75) :1lots, at price: 57.4
+
+ Positional profit/loss: 94.15
+
+***************************************************
+Opened a trade at 2019-10-23 00:00:00
+	Sold NIFTY19OCTFUT, Lot size(75) :1lots, at price: 11610.25
+	Bought NIFTY19OCT11600CE, Lot size(75) :1lots, at price: 94.15
+	Closing a trade at 2019-10-24 00:00:00
+	Bought(closed) NIFTY19OCTFUT, Lot size(75) :1lots, at price: 11669.65
+	Sold(closed) NIFTY19OCT11600CE, Lot size(75) :1lots, at price: 143.7
+
+ Positional profit/loss: -9.85
+
+***************************************************
+Opened a trade at 2019-10-24 00:00:00
+	Bought NIFTY19OCTFUT, Lot size(75) :1lots, at price: 11669.65
+	Bought NIFTY19OCT11650PE, Lot size(75) :1lots, at price: 87.95
+	Closing a trade at 2019-10-24 00:00:00
+	Sold(closed) NIFTY19OCTFUT, Lot size(75) :1lots, at price: 11669.65
+	Sold(closed) NIFTY19OCT11650PE, Lot size(75) :1lots, at price: 87.95
+
+ Positional profit/loss: 0.0
+
+***************************************************
+Total profit/loss: 89.65

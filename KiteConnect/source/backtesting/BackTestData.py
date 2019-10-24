@@ -1,6 +1,9 @@
-from KiteConnect.source.KiteOrderManager import KiteOrderManager
+from source.KiteOrderManager import KiteOrderManager
+from source.Utility import *
+
+#from KiteConnect.source.KiteOrderManager import KiteOrderManager
+#from KiteConnect.source.Utility import *
 import pandas as pd
-from KiteConnect.source.Utility import *
 from datetime import datetime
 
 class BasicStock():
@@ -64,18 +67,17 @@ class RootStock(BasicStock):
 class BackTest():
     
     def __init__(self):
-        self.fDesiredExchange = 'NSE'
         self.fZerodhaInstrumentDF = pd.read_csv(DATA_LOCATION + ZERODHA_INSTRUMENT_LIST_FILENAME)
         
     def GetHisoricalData(self, instruemenToken, fromData, toData, interval, continuous):
         kite = KiteOrderManager.GetInstance()
         return kite.GetHistoricalData(instruemenToken, fromData, toData, interval, continuous)
     
-    def GetInstrumentTokenAndLotSize(self, symbol):
+    def GetInstrumentTokenAndLotSize(self, symbol, exchange):
         for j in range(self.fZerodhaInstrumentDF["tradingsymbol"].__len__()):
-            if symbol == self.fZerodhaInstrumentDF["tradingsymbol"][j] and self.fZerodhaInstrumentDF["exchange"][j] == self.fDesiredExchange:
-                instrumentToken = self.fZerodhaInstrumentDF["instrument_token"]
-                lotSize = self.fZerodhaInstrumentDF["lot_size"]
+            if symbol == self.fZerodhaInstrumentDF["tradingsymbol"][j] and self.fZerodhaInstrumentDF["exchange"][j] == exchange:
+                instrumentToken = self.fZerodhaInstrumentDF["instrument_token"][j]
+                lotSize = self.fZerodhaInstrumentDF["lot_size"][j]
                 return [instrumentToken, lotSize]
     
     

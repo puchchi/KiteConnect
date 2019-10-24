@@ -1,6 +1,10 @@
-from KiteConnect.source.backtesting import BackTestData, BackTestOrderManager
-from KiteConnect.source.backtesting.BackTestOrderManager import OrderManagerStockStruct
-from KiteConnect.source.Utility import *
+from source.backtesting import BackTestData, BackTestOrderManager
+from source.backtesting.BackTestOrderManager import OrderManagerStockStruct
+from source.Utility import *
+
+#from KiteConnect.source.backtesting import BackTestData, BackTestOrderManager
+#from KiteConnect.source.backtesting.BackTestOrderManager import OrderManagerStockStruct
+#from KiteConnect.source.Utility import *
 import datetime as dt
 import math
 
@@ -9,9 +13,10 @@ ROOT_STOCK_NAME = 'NIFTY'                                   # We will generate r
 DERIVATIVE_STOCK_PREFIX = 'NIFTY19OCT'
 ROOT_STOCK = DERIVATIVE_STOCK_PREFIX + 'FUT'                 #'NIFTY19JULFUT'
 SUB_STOCK_LIST = [DERIVATIVE_STOCK_PREFIX + '12000CE', DERIVATIVE_STOCK_PREFIX + '11900PE']
-FROM_DATE = '2019-01-01 09:00:00'
-TO_DATE = '2019-01-31 16:00:00'
-ANNUALISED_VOLATILITY = 30.00
+EXCHANGE = 'NFO'
+FROM_DATE = '2019-10-01 09:00:00'
+TO_DATE = '2019-10-31 16:00:00'
+ANNUALISED_VOLATILITY = 0.13
 CALL_PUT_MULTIPLE_OF = 50
 
 INTERVAL_MINUTE = 'minute'
@@ -41,7 +46,7 @@ class FibTest(BackTestData.BackTest):
         self.fBackTestOrderManager = BackTestOrderManager.OrderManager(REPORT_NAME ,ROOT_STOCK_NAME)
     
     def __call__(self):
-        rootStockInstrument, rootLotSize = self.GetInstrumentTokenAndLotSize(ROOT_STOCK)
+        rootStockInstrument, rootLotSize = self.GetInstrumentTokenAndLotSize(ROOT_STOCK, EXCHANGE)
         
         _fromDateDT = self.fFromDateDT
         
@@ -51,7 +56,7 @@ class FibTest(BackTestData.BackTest):
             
         # Now we will get last close value of current stock. To get that, we will get last 7 day daywise data just to be safe side
         last7DayFromDate = (_fromDateDT - dt.timedelta(days=7)).strftime(TEST_TIME_FORMAT)
-        last7DayToDate = (_fromDateDT - dt.timedelta(days=2)).strftime(TEST_TIME_FORMAT)
+        last7DayToDate = (_fromDateDT - dt.timedelta(days=0)).strftime(TEST_TIME_FORMAT)
         last7DayData = self.GetHisoricalData(rootStockInstrument, last7DayFromDate, last7DayToDate, INTERVAL_DAY, True)
         if (last7DayData.__len__() == 0):
             print "Last 7 day data of " + str(ROOT_STOCK) + " from start date " + str(last7DayFromDate) + " is nil"
@@ -80,7 +85,7 @@ class FibTest(BackTestData.BackTest):
             # Getting data of root stock
             _fromDate = _fromDateDT.strftime(TEST_TIME_FORMAT)
             _toDate = (_fromDateDT + dt.timedelta(days=6)).strftime(TEST_TIME_FORMAT)
-            rootStockTickData = self.GetHisoricalData(rootStockInstrument, _fromDate, _toDate, INTERVAL_MINUTE, True)
+            rootStockTickData = self.GetHisoricalData(rootStockInstrument, _fromDate, _toDate, INTERVAL_DAY, True)
             
             # Now we walk stock data
             for tick in rootStockTickData:
@@ -109,8 +114,8 @@ class FibTest(BackTestData.BackTest):
                     isOpenUpTrade = True
                     upTradePriceToWatchIndex += 1
                     closestPutSymbol = self.GetClosestPutOrCallStrikeSymbol(tick['open'], 'PUT')
-                    putLegInstrument, putLegLotSize = self.GetInstrumentTokenAndLotSize(closestPutSymbol)
-                    putLegTickData = self.GetHisoricalData(putLegInstrument, _fromDate, _toDate, INTERVAL_MINUTE, True)
+                    putLegInstrument, putLegLotSize = self.GetInstrumentTokenAndLotSize(closestPutSymbol, EXCHANGE)
+                    putLegTickData = self.GetHisoricalData(putLegInstrument, _fromDate, _toDate, INTERVAL_DAY, True)
                     
                     # Getting stock details for current position
                     stock1 = OrderManagerStockStruct(ROOT_STOCK, rootLotSize, rootLotSize, rootStockTickData, tick['open'], INVALID_PRICE)
@@ -124,8 +129,8 @@ class FibTest(BackTestData.BackTest):
                     isOpenDownTrade = True
                     downTradePriceToWatchIndex += 1
                     closestCallSymbol = self.GetClosestPutOrCallStrikeSymbol(tick['open'], 'CALL')
-                    callLegInstrument, callLegLotSize = self.GetInstrumentTokenAndLotSize(closestCallSymbol)
-                    callLegTickData = self.GetHisoricalData(callLegInstrument, _fromDate, _toDate, INTERVAL_MINUTE, True)
+                    callLegInstrument, callLegLotSize = self.GetInstrumentTokenAndLotSize(closestCallSymbol, EXCHANGE)
+                    callLegTickData = self.GetHisoricalData(callLegInstrument, _fromDate, _toDate, INTERVAL_DAY, True)
                     
                     # Getting stock details for current position
                     stock1 = OrderManagerStockStruct(ROOT_STOCK, rootLotSize, rootLotSize, rootStockTickData, INVALID_PRICE, tick['open'])
@@ -152,7 +157,7 @@ class FibTest(BackTestData.BackTest):
         
     def GetFibLevels(self, price):
         # 1 sd formula = annual volatility * price * sqrt(1)/sqrt(365)      // Here 1 is no of days
-        _1SD = ANNUALISED_VOLATILITY * price * math.sqrt(7/365) / 100
+        _1SD = ANNUALISED_VOLATILITY * price * math.sqrt(7.00/365.00)
         #fibLevels = [_1SD * i for i in FIB_LEVELS]
         #fibUpperLevels = [price + i for i in fibLevels]
         #fibLowerLevels = [price - i for i in fibLevels]
@@ -166,8 +171,8 @@ class FibTest(BackTestData.BackTest):
         # We will try to get in the money put
         
         # we will find left & right multiple of price
-        leftPrice = (price/CALL_PUT_MULTIPLE_OF) * CALL_PUT_MULTIPLE_OF
-        rightPrice = leftPrice + CALL_PUT_MULTIPLE_OF
+        leftPrice = int(price/CALL_PUT_MULTIPLE_OF) * CALL_PUT_MULTIPLE_OF
+        rightPrice = int(leftPrice + CALL_PUT_MULTIPLE_OF)
         
         # Ideally rightprice should be in the money put, but we will select which ever is closest
         closestPrice = leftPrice
