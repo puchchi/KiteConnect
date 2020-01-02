@@ -34,7 +34,8 @@ def on_connect(ws, response):
     print "Connection successful....."
     logging.info("Connection successful.....")
     #subscriberList = Utility.GetNSE500List()
-    subscriberList = INDEX_FUTURE_DATA.keys()
+    #subscriberList = INDEX_FUTURE_DATA.keys()
+    subscriberList = NIFTY50_INSTRUMENT_TOKEN_WITH_SYMBOL_LIST.keys()
     
     ws.subscribe(subscriberList)
     #ws.subscribe([738561])

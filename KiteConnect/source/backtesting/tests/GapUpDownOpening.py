@@ -1,10 +1,10 @@
-#from source.backtesting import BackTestData, BackTestOrderManager
-#from source.backtesting.BackTestOrderManager import OrderManagerStockStruct
-#from source.Utility import *
+from source.backtesting import BackTestData, BackTestOrderManager
+from source.backtesting.BackTestOrderManager import OrderManagerStockStruct
+from source.Utility import *
 
-from KiteConnect.source.backtesting import BackTestData, BackTestOrderManager
-from KiteConnect.source.backtesting.BackTestOrderManager import OrderManagerStockStruct
-from KiteConnect.source.Utility import *
+#from KiteConnect.source.backtesting import BackTestData, BackTestOrderManager
+#from KiteConnect.source.backtesting.BackTestOrderManager import OrderManagerStockStruct
+#from KiteConnect.source.Utility import *
 import datetime as dt
 import math
 
@@ -69,7 +69,7 @@ class GapUpDownOpening(BackTestData.BackTest):
             rootStockDayTickData = self.GetHisoricalData(rootStockInstrument, _fromDate, _toDate, INTERVAL_DAY, False)
             tickLen = rootStockDayTickData.__len__()
             index = 0
-            while (_fromDateDT < self.fToDateDT or index < tickLen) :
+            while (_fromDateDT < self.fToDateDT and index < tickLen) :
                 
                 # Getting data of root stock
                 #_fromDate = _fromDateDT.strftime(TEST_TIME_FORMAT)
@@ -95,7 +95,7 @@ class GapUpDownOpening(BackTestData.BackTest):
                 _tmpFromDate = currentDate.strftime(TEST_TIME_FORMAT)
                 _tmpToDate = (currentDate + dt.timedelta(days=1)).strftime(TEST_TIME_FORMAT)
                 
-                rootStockMinuteTickData = self.GetHisoricalData(rootStockInstrument, _fromDate, _toDate, INTERVAL_MINUTE, False)
+                rootStockMinuteTickData = self.GetHisoricalData(rootStockInstrument, _tmpFromDate, _tmpToDate, INTERVAL_MINUTE, False)
                 #if (rootStockDayTickData.__len__()>0):
                 #    tempData = rootStockDayTickData[0]
                 #    print " ===================\n"
