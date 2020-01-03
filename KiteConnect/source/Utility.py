@@ -34,8 +34,8 @@ PIN_PATH = path.join(KEYS_LOCATION, "pin")
 ACCESS_TOKEN_URL = 'https://api.kite.trade/session/token'
 INSTRUMENTS_DATA_URL = 'https://api.kite.trade/instruments'
 
-GAP_LOWER_LIMIT = 2
-GAP_UPPER_LIMIT = 4
+GAP_LOWER_LIMIT = 1
+GAP_UPPER_LIMIT = 1
 
 DATA_LOCATION = path.join(HOME_DIR, "Data/")
 ZERODHA_INSTRUMENT_LIST_FILENAME = "instruments"
@@ -50,11 +50,11 @@ SHORTLISTED_GAP_OPEN_STOCK_LOCATION = path.join(HOME_DIR, "GapOpenShortlistedSto
 
 USE_CONSTANT_QUANTITY = False
 CONSTANT_QUANTITY = 1
-AVAILABLE_MARGIN = 30000 * 4.2        # Assuming 4.2x leavarege on Bracket order
+AVAILABLE_MARGIN = 10000 * 10        # Assuming 4.2x leavarege on Bracket order
 
 ORDER_TYPE = 'BO'          #'BO'
 
-TICKERSTART = '091200'     #091200     # 09:15:05 AM (added 5 second as time padding)
+TICKERSTART = '091000'     #091200     # 09:15:05 AM (added 5 second as time padding)
 TRADABLESTOCKSTART = '220400'     #91800     # 09:18:00 AMl
 GAPUPTRADINGPREP = '091430'    #091430             # 09:14:30 AM  # 30 second early to start kite manager
 TRADINGSTART = '091500'     #091500     # 09:20:05 AM       

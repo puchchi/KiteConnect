@@ -53,8 +53,14 @@ class kCommand:
 
         gapOpenTableName = GAP_OPEN_TABLENAME
         try:
+            dropTableSQL = """ DROP TABLE %s;""" %(gapOpenTableName)
+            self.cursor.execute(dropTableSQL)
+        except Exception as e:
+            self.DumpExceptionInfo(e, "do")
+
+        try:
             SQL = """ CREATE TABLE %s (Symbol VARCHAR(30), OpenPrice FLOAT NOT NULL, 
-                    TaskType VARCHAR(2), Status VARCHAR(10) PRIMARY KEY (Symbol)); """ % (gapOpenTableName)
+                    TaskType VARCHAR(2), Status VARCHAR(10), PRIMARY KEY (Symbol)); """ % (gapOpenTableName)
             self.cursor.execute(SQL)
             print "Complete!!! Gap open table"
         except Exception as e:

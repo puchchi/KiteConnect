@@ -2,6 +2,7 @@ from Utility import *
 from os import path
 from datetime import datetime
 from KiteOrderManager import KiteOrderManager
+from DatabaseManager import DatabaseManager
 import thread, os
 
 # Use this tick analyser only for nifty 50, otherwise it will crash
@@ -42,6 +43,8 @@ def CollectStocks(ws, ticks):
                 #    f.write("symbol,open,signal,\n" + NIFTY50_INSTRUMENT_TOKEN_WITH_SYMBOL_LIST[instrumentToken] + ","
                 #           + str(openPrice) + "," + signal)
                 print "Shortlisted stocks | " + str(instrumentToken) +"[" + NIFTY50_INSTRUMENT_TOKEN_WITH_SYMBOL_LIST[instrumentToken] + "]" + ", opened at " + str(gapOpenPer)
+                ws.unsubscribe([instrumentToken,])
+                print "Unsubscribing from " + str(instrumentToken) + ", opened at " + str(gapOpenPer)
             except Exception as e:
                 logging.error("Exception occured!GapOpenTickAnalyser analyser", exc_info=True)
                 print "Exception occured in GapOpenTickAnalyser.py"

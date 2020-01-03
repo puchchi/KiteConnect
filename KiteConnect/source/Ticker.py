@@ -7,7 +7,8 @@ from Utility import *
 from InitToken import TokenManager
 from multiprocessing import Process, Queue
 #from TickAnalyser import Analyse
-from IndexTickAnalyser import Analyse
+#from IndexTickAnalyser import Analyse
+from GapOpenTickAnalyser import Analyse
 import CleanNCreateDBTables
 from datetime import datetime
 
@@ -99,6 +100,7 @@ class kCommand:
 
     def do(self):
         process = self.run_process()
+        return
         while(1):
             now = int(datetime.now().strftime("%H%M%S"))
 

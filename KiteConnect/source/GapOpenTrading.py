@@ -1,5 +1,6 @@
 from multiprocessing import Process, Queue
-import os, thread
+import os, thread, time
+from datetime import datetime
 import pandas as pd
 from Utility import *
 import datetime as dt
@@ -10,25 +11,26 @@ def Start():
     kiteInstance = KiteOrderManager.GetInstance()
     dbInstance = DatabaseManager.GetInstance()
     doneStock = []
+    print "Starting GapOpenTrading"
     while (1):
         now = int(datetime.now().strftime("%H%M%S"))
-
         # Start trading
-        if now >= int(TICKERSTART):
+        if now >= int(TRADINGSTART):
             try:
                 shortListedStock = dbInstance.GetOpenGapOpenTask()
                 len = shortListedStock.__len__()
+                print "Shortlisted stock found " + str(len)
                 if len == 0:
                     break
-                availableMargin = TOTAL_MARGIN / len
+                availableMargin = AVAILABLE_MARGIN / len
                 for stock in shortListedStock:
                     try:
-                        if stock['status'] == 'b':
-                            BuyStock(stock['symbol'], stock['openPrice'], availableMargin, kiteInstance)
-                        elif stock['status'] == 's':
-                            SellStock(stock['symbol'], stock['openPrice'], availableMargin, kiteInstance)
+                        if stock[2] == 'b':
+                            BuyStock(stock[0], stock[1], availableMargin, kiteInstance)
+                        elif stock[2] == 's':
+                            SellStock(stock[0], stock[1], availableMargin, kiteInstance)
                     except Exception as e:
-                        print "Exception in executing stock " + stock['symbol']
+                        print "Exception in executing stock " + stock[0]
                         print e
             except Exception as e:
                 print "Exception in GapOpenTrading::Start()"
@@ -37,22 +39,7 @@ def Start():
         time.sleep(1)
 
 def BuyStock(symbol, openPrice, margin, kiteInstance):
-    quantity = margin / openPrice
-    targetPoint, stopLossPoint = GetTargetSLPoints(openPrice)
-    if (targetPoint == 0 or stopLossPoint == 0):
-        print "TP/Sl point is 0 for openprice " + str(openPrice)
-        return
-
-    paddedPrice = (openPrice * PRICE_PADDING_PERCENTAGE / 100)
-    paddedPrice = int((paddedPrice / 0.05).__format__('.0f'))
-    paddedPrice = float((paddedPrice * 0.05).__format__('.2f'))
-    tradePrice = openPrice - paddedPrice
-    kiteInstance.BuyOrder(symbol, tradePrice, targetPoint, stopLossPoint, quantity)
-
-    thread.start_new_thread(MarkGapOpenTaskDone, (symbol))
-
-def SellStock(symbol, openPrice, margin, kiteInstance):
-    quantity = margin / openPrice
+    quantity = int(margin / openPrice)
     targetPoint, stopLossPoint = GetTargetSLPoints(openPrice)
     if (targetPoint == 0 or stopLossPoint == 0):
         print "TP/Sl point is 0 for openprice " + str(openPrice)
@@ -62,22 +49,37 @@ def SellStock(symbol, openPrice, margin, kiteInstance):
     paddedPrice = int((paddedPrice / 0.05).__format__('.0f'))
     paddedPrice = float((paddedPrice * 0.05).__format__('.2f'))
     tradePrice = openPrice + paddedPrice
-    kiteInstance.SellOrder(symbol, tradePrice, targetPoint, stopLossPoint, quantity)
+    kiteInstance.BuyOrder(symbol, tradePrice, targetPoint, stopLossPoint, -1, quantity)
 
-    thread.start_new_thread(MarkGapOpenTaskDone, (symbol))
+    thread.start_new_thread(MarkGapOpenTaskDone, (symbol,))
+
+def SellStock(symbol, openPrice, margin, kiteInstance):
+    quantity = int(margin / openPrice)
+    targetPoint, stopLossPoint = GetTargetSLPoints(openPrice)
+    if (targetPoint == 0 or stopLossPoint == 0):
+        print "TP/Sl point is 0 for openprice " + str(openPrice)
+        return
+
+    paddedPrice = (openPrice * PRICE_PADDING_PERCENTAGE / 100)
+    paddedPrice = int((paddedPrice / 0.05).__format__('.0f'))
+    paddedPrice = float((paddedPrice * 0.05).__format__('.2f'))
+    tradePrice = openPrice - paddedPrice
+    kiteInstance.SellOrder(symbol, tradePrice, targetPoint, stopLossPoint, -1, quantity)
+
+    thread.start_new_thread(MarkGapOpenTaskDone, (symbol,))
 
 def MarkGapOpenTaskDone(symbol):
     dbInstance = DatabaseManager.GetInstance()
     dbInstance.MarkGapOpenTaskDone(symbol)
 
 def GetTargetSLPoints(openPrice):
-    targetPoint = (lastPrice * PROFIT_PERCENTAGE / 100)
+    targetPoint = (openPrice * PROFIT_PERCENTAGE / 100)
     targetPoint = int((targetPoint / 0.05).__format__('.0f'))
     targetPoint = (targetPoint * 0.05).__format__('.2f')
 
     stopLossPoint = targetPoint
     if (PROFIT_PERCENTAGE != STOPLOSS_PERCENTAGE):
-        stopLossPoint = (lastPrice * STOPLOSS_PERCENTAGE / 100)
+        stopLossPoint = (openPrice * STOPLOSS_PERCENTAGE / 100)
         stopLossPoint = int((stopLossPoint / 0.05).__format__('.0f'))
         stopLossPoint = (stopLossPoint * 0.05).__format__('.2f')
 

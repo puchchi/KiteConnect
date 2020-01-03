@@ -52,10 +52,12 @@ class KiteOrderManager():
             return self.SellMISOrder(symbol, tradePrice, targetPoint, stoplossPoint, quantity)
 
     def BuyBracketOrder(self, symbol, tradePrice, targetPoint, stoplossPoint, trailingSL, quantity):
+        #print "Order for symol: "+ symbol + " for quantity " + str(quantity) + " placed at price " + str(tradePrice) + " targetpoint " + str(targetPoint) + " stoplosspoint " + str(stoplossPoint)
+        quantity = 1
         try:
             orderNo = self.kite.place_order(
                     variety=self.kite.VARIETY_BO,
-                    exchange=self.kite.EXCHANGE_NFO,            #NFO or NSE
+                    exchange=self.kite.EXCHANGE_NSE,            #NFO or NSE
                     tradingsymbol=symbol,
                     transaction_type=self.kite.TRANSACTION_TYPE_BUY,
                     quantity=quantity,
@@ -113,10 +115,12 @@ class KiteOrderManager():
         return ""
 
     def SellBracketOrder(self, symbol, tradePrice, targetPoint, stoplossPoint, trailingSL, quantity):
+        #print "Order for symol: "+ symbol + " for quantity " + str(quantity) + " placed at price " + str(tradePrice) + " targetpoint " + str(targetPoint) + " stoplosspoint " + str(stoplossPoint)
+        quantity = 1
         try:
             orderNo = self.kite.place_order(
                     variety=self.kite.VARIETY_BO,
-                    exchange=self.kite.EXCHANGE_NFO,            # NFO or NSE
+                    exchange=self.kite.EXCHANGE_NSE,            # NFO or NSE
                     tradingsymbol=symbol,
                     transaction_type=self.kite.TRANSACTION_TYPE_SELL,
                     quantity=quantity,
