@@ -50,7 +50,7 @@ SHORTLISTED_GAP_OPEN_STOCK_LOCATION = path.join(HOME_DIR, "GapOpenShortlistedSto
 
 USE_CONSTANT_QUANTITY = False
 CONSTANT_QUANTITY = 1
-AVAILABLE_MARGIN = 10000 * 10        # Assuming 4.2x leavarege on Bracket order
+AVAILABLE_MARGIN = 10000 * 10        # Assuming 10x leavarege on Bracket order
 
 ORDER_TYPE = 'BO'          #'BO'
 

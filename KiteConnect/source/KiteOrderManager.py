@@ -53,7 +53,7 @@ class KiteOrderManager():
 
     def BuyBracketOrder(self, symbol, tradePrice, targetPoint, stoplossPoint, trailingSL, quantity):
         #print "Order for symol: "+ symbol + " for quantity " + str(quantity) + " placed at price " + str(tradePrice) + " targetpoint " + str(targetPoint) + " stoplosspoint " + str(stoplossPoint)
-        quantity = 1
+        #quantity = 1
         try:
             orderNo = self.kite.place_order(
                     variety=self.kite.VARIETY_BO,
@@ -116,7 +116,7 @@ class KiteOrderManager():
 
     def SellBracketOrder(self, symbol, tradePrice, targetPoint, stoplossPoint, trailingSL, quantity):
         #print "Order for symol: "+ symbol + " for quantity " + str(quantity) + " placed at price " + str(tradePrice) + " targetpoint " + str(targetPoint) + " stoplosspoint " + str(stoplossPoint)
-        quantity = 1
+        #quantity = 1
         try:
             orderNo = self.kite.place_order(
                     variety=self.kite.VARIETY_BO,
