@@ -1,12 +1,18 @@
-#from source.backtesting import BackTestData, BackTestOrderManager
-#from source.backtesting.BackTestOrderManager import OrderManagerStockStruct
-#from source.Utility import *
+from source.backtesting import BackTestData, BackTestOrderManager
+from source.backtesting.BackTestOrderManager import OrderManagerStockStruct
+from source.Utility import *
 
+<<<<<<< HEAD
 from KiteConnect.source.backtesting import BackTestData, BackTestOrderManager
 from KiteConnect.source.backtesting.BackTestOrderManager import OrderManagerStockStruct
 from KiteConnect.source.Utility import *
 
 import matplotlib.dates as mdates
+=======
+#from KiteConnect.source.backtesting import BackTestData, BackTestOrderManager
+#from KiteConnect.source.backtesting.BackTestOrderManager import OrderManagerStockStruct
+#from KiteConnect.source.Utility import *
+>>>>>>> 5b740e0e15762772fa2f90acfa54ccdd706b243c
 import datetime as dt
 import math
 
