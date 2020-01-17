@@ -209,6 +209,43 @@ class DatabaseManager():
         #finally:
             #cursor.close()
 
+    def CreateNewGapOpenTask(self, symbol, openPrice, tasktype):
+        try:
+            cursor = self.db.cursor()
+            SQL = """ INSERT INTO %s (Symbol, OpenPrice, TaskType, Status) VALUES ('%s', %s, '%s', '%s')
+            """ %(GAP_OPEN_TABLENAME, symbol, openPrice, tasktype, 'open')
+            cursor.execute(SQL)
+            self.db.commit()
+        except Exception as e:
+            self.db.rollback()
+            self.DumpExceptionInfo(e, "CreateNewGapOpenTask")
+
+    def GetOpenGapOpenTask(self):
+        try:
+            cursor = self.db.cursor()
+            SQL = """SELECT Symbol, OpenPrice, TaskType from %s where Status='%s' 
+            """ %(GAP_OPEN_TABLENAME, 'open')
+            cursor.execute(SQL)
+            data = cursor.fetchall()
+            cursor.close()
+            return data
+        except Exception as e:
+            self.DumpExceptionInfo(e, "GetPrevLevel")
+        #finally:
+            #cursor.close()
+            return []
+
+    def MarkGapOpenTaskDone(self, symbol):
+        try:
+            cursor = self.db.cursor()
+            SQL = """ UPDATE %s SET status='%s' WHERE symbol='%s'
+            """ %(GAP_OPEN_TABLENAME, 'done', symbol)
+            cursor.execute(SQL)
+            self.db.commit()
+        except Exception as e:
+            self.db.rollback()
+            self.DumpExceptionInfo(e, "MarkGapOpenTaskDone")
+
     def DumpExceptionInfo(self, e, funcName):
         logging.error("Error in DatabaseManager::" + funcName, exc_info=True)
         print e

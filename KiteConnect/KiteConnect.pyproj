@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>185af9f3-760b-4892-817e-d039607b5ee7</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>source\backtesting\tests\FibTest.py</StartupFile>
+    <StartupFile>source\Main.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -27,6 +27,7 @@
     <Compile Include="source\backtesting\BackTestData.py" />
     <Compile Include="source\backtesting\BackTestOrderManager.py" />
     <Compile Include="source\backtesting\tests\FibTest.py" />
+    <Compile Include="source\backtesting\tests\GapUpDownOpening.py" />
     <Compile Include="source\backtesting\tests\__init__.py" />
     <Compile Include="source\backtesting\__init__.py" />
     <Compile Include="source\CleanNCreateDBTables.py">
@@ -36,6 +37,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="source\DatabaseManager.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="source\GapOpenTrading.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="source\IndexTickAnalyser.py">
@@ -48,6 +52,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="source\KiteOrderManager.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="source\GapOpenTickAnalyser.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="source\Scheduling.py">

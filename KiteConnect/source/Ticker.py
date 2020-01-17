@@ -7,7 +7,8 @@ from Utility import *
 from InitToken import TokenManager
 from multiprocessing import Process, Queue
 #from TickAnalyser import Analyse
-from IndexTickAnalyser import Analyse
+#from IndexTickAnalyser import Analyse
+from GapOpenTickAnalyser import Analyse
 import CleanNCreateDBTables
 from datetime import datetime
 
@@ -34,7 +35,8 @@ def on_connect(ws, response):
     print "Connection successful....."
     logging.info("Connection successful.....")
     #subscriberList = Utility.GetNSE500List()
-    subscriberList = INDEX_FUTURE_DATA.keys()
+    #subscriberList = INDEX_FUTURE_DATA.keys()
+    subscriberList = NIFTY50_INSTRUMENT_TOKEN_WITH_SYMBOL_LIST.keys()
     
     ws.subscribe(subscriberList)
     #ws.subscribe([738561])
@@ -98,6 +100,7 @@ class kCommand:
 
     def do(self):
         process = self.run_process()
+        return
         while(1):
             now = int(datetime.now().strftime("%H%M%S"))
 
