@@ -1,9 +1,12 @@
-from os import path
 #from source.Utility import *
 #from source.backtesting import BackTestData
 
 from KiteConnect.source.Utility import *
 from KiteConnect.source.backtesting import BackTestData
+
+from os import path
+import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
 
 REPORT_DIR = path.dirname(path.dirname(path.abspath(__file__)))
 REPORT_TIME_FORMAT = '%Y-%m-%d %H:%M:%S'
@@ -101,6 +104,8 @@ class OrderManager():
             fd.write(messageString)
             
         print messageString
+        
+        return positionalProfitOrLoss
             
     def DumpFullProfitOrLoss(self):
         with open(self.fReportFileName, 'a') as fd: 
@@ -128,5 +133,15 @@ class OrderManager():
             print messageString
             
             
-            
+    def PlotGraph(self, dateList, dataList):
+        if(dateList.__len__()!=dataList.__len__()):
+            print "Datelist and datalist size mismatch for PlotGraph"
+            return 
+        
+        plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
+        plt.gca().xaxis.set_major_locator(mdates.DayLocator(interval=5))
+        plt.plot(dateList,dataList)
+        plt.gcf().autofmt_xdate()
+        plt.show()
+        
             
