@@ -1,9 +1,9 @@
 from os import path
-#from source.Utility import *
-#from source.backtesting import BackTestData
+from source.Utility import *
+from source.backtesting import BackTestData
 
-from KiteConnect.source.Utility import *
-from KiteConnect.source.backtesting import BackTestData
+#from KiteConnect.source.Utility import *
+#from KiteConnect.source.backtesting import BackTestData
 
 REPORT_DIR = path.dirname(path.dirname(path.abspath(__file__)))
 REPORT_TIME_FORMAT = '%Y-%m-%d %H:%M:%S'
